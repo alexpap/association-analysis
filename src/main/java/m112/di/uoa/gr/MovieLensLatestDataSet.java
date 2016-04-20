@@ -1,9 +1,6 @@
 package m112.di.uoa.gr;
 
 import com.google.gson.Gson;
-import org.apache.commons.collections.map.HashedMap;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import java.io.*;
