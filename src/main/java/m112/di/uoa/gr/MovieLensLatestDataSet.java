@@ -25,6 +25,7 @@ import java.util.zip.ZipFile;
  * <movieId, title>
  *
  * @author alexpap
+ * @deprecated
  */
 public class MovieLensLatestDataSet {
 
