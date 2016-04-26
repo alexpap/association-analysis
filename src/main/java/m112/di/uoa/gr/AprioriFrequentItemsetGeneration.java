@@ -208,9 +208,9 @@ public class AprioriFrequentItemsetGeneration {
     public static void main(String[] args){
         String path =
               // for the small the support factor tested with 0.01/0.02
-//            AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
+            AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
               // for the large the support factor tested with  0.05/0.1
-              AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest.zip").getPath();
+//              AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest.zip").getPath();
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.1);
         frequentItemset.preprocess(path);
         ArrayList<CandidateHashTree> itemsets = frequentItemset.generateItemsets();
