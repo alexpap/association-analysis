@@ -18,9 +18,9 @@ public class AprioriFrequentItemsetGeneration {
 
     private static final Logger log = Logger.getLogger(AprioriFrequentItemsetGeneration.class);
     private ArrayList<CandidateHashTree> frequentItemsets;
-    private HashMap<String, String> items;
+    private HashMap<int[], String> items;
     private int[][] transactions;
-    private int threshold;
+    private double threshold;
 
     /**
      * Calculate the current memory usage in MBs
@@ -35,11 +35,11 @@ public class AprioriFrequentItemsetGeneration {
      * Initialize internal structures and @support_threshold
      * @param support_threshold
      */
-    public AprioriFrequentItemsetGeneration(int support_threshold) {
+    public AprioriFrequentItemsetGeneration(double support_threshold) {
 
         frequentItemsets = new ArrayList<CandidateHashTree>();
         frequentItemsets.add(null);  // skip k = 0
-        items = new HashMap<String, String>();
+        items = new HashMap<int[], String>();
         transactions = null;
         threshold = support_threshold;
     }
@@ -75,7 +75,7 @@ public class AprioriFrequentItemsetGeneration {
                 while ((line = reader.readLine()) != null) {
 
                     tokenizer = new StringTokenizer(line,",", false);
-                    items.put(tokenizer.nextToken(), tokenizer.nextToken());
+                    items.put(new int[] {Integer.parseInt(tokenizer.nextToken())}, tokenizer.nextToken());
                 }
                 log.debug(
                     items.size() + " #Items loaded ("
@@ -108,8 +108,7 @@ public class AprioriFrequentItemsetGeneration {
 
             try {
                 HashMap<Integer,TreeSet<Integer>> baskets = new HashMap<Integer,TreeSet<Integer>>();
-                CandidateHashTree firstItemsets = new CandidateHashTree(threshold);
-                int[] tmpKey = new int[1];
+                CandidateHashTree firstItemsets = new CandidateHashTree(1, threshold);
                 String line = "";
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -130,7 +129,7 @@ public class AprioriFrequentItemsetGeneration {
                     ubasket.add(ikey);
 
                     // update firstItemsets
-                    firstItemsets.frequencyIncrement(tmpKey);
+                    firstItemsets.frequencyIncrement(new int[] {ikey});
                 }
                 frequentItemsets.add(firstItemsets);
                 log.debug(
@@ -183,39 +182,45 @@ public class AprioriFrequentItemsetGeneration {
     public ArrayList<CandidateHashTree> generateItemsets(){
 
         int k = 1;
-        int minsup = (threshold*frequentItemsets.get(k).size())/100;
 
         // {Find all frequent 1-itemsets}
         // note that 1-itemsets was generated at the pre-processing phase.
-        log.debug("1-itemsets support filtering (" + minsup + ") ...");
+        log.debug("1-itemsets sizeof " + frequentItemsets.get(k).size() + " exec support filtering ...");
         frequentItemsets.get(k).supportFiltering();
+        log.debug("1-itemsets sizeof " + frequentItemsets.get(k).size());
 
-        //
-        CandidateHashTree currentItemsets;
-        do {
-            ++k;
-            log.debug("Try to generate 2-itemsets ...");
-            currentItemsets = frequentItemsets.get(k-1).aprioriGen();
-            for(int i = 0; i < transactions.length; i++){
-
-                currentItemsets.supportCounting(transactions[i]);
-            }
-            currentItemsets.supportFiltering();
-            frequentItemsets.add(currentItemsets);
-            log.debug("2-itemsets created ");
-        }while(currentItemsets.size() > 0);
+//        CandidateHashTree currentItemsets;
+//        do {
+//            ++k;
+//            log.debug("Try to generate 2-itemsets ...");
+//            currentItemsets = frequentItemsets.get(k-1).aprioriGen();
+//            for(int i = 0; i < transactions.length; i++){
+//
+//                currentItemsets.supportCounting(transactions[i]);
+//            }
+//            currentItemsets.supportFiltering();
+//            frequentItemsets.add(currentItemsets);
+//            log.debug("2-itemsets created ");
+//        }while(currentItemsets.size() > 0);
         return frequentItemsets;
     }
 
     public static void main(String[] args){
         String path =
+              // for the small the support factor tested with 0.01/0.02
 //            AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
+              // for the large the support factor tested with  0.05/0.1
               AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest.zip").getPath();
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(10);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.1);
         frequentItemset.preprocess(path);
-        for (CandidateHashTree candidateHashTree : frequentItemset.generateItemsets()) {
-            if (candidateHashTree != null)
-            log.debug(candidateHashTree.size());
-        }
+        ArrayList<CandidateHashTree> itemsets = frequentItemset.generateItemsets();
+        // log the candidate trees
+//        for (CandidateHashTree itemset : itemsets) {
+//            if(itemset!= null) {
+//                log.info(itemset.toString());
+//            }
+//        }
+
+
     }
 }

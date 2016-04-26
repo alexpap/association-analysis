@@ -1,123 +1,241 @@
 package m112.di.uoa.gr;
 
-import org.apache.commons.math3.util.CombinatoricsUtils;
+import org.apache.log4j.Logger;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author alexpap
  */
 public class CandidateHashTree {
 
-    private TreeMap<int[], int[]> itemsets;
-    private int minsup;
+    private static final Logger log = Logger.getLogger(CandidateHashTree.class);
 
-    private class CandidateComparator implements Comparator<int[]> {
+    private class Itemset{
 
-        @Override public int compare(int[] s1, int[] s2) {
-            return s1[0] < s1[0] ?  -1 : s1[0] == s1[0] ? 0 : 1;
+        int[] items;
+        int level;
+
+        public Itemset() {
+        }
+
+        public Itemset(int[] items, int level) {
+            this.items = items;
+            this.level = level;
+        }
+
+        @Override public boolean equals(Object o) {
+
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            Itemset itemset = (Itemset) o;
+
+            return Arrays.equals(items, itemset.items);
+
+        }
+
+        @Override public int hashCode() { return items[level]; }
+
+        public int hashValue(){ return items[level] % items.length; }
+
+        public void increaseLevel(){ ++level; }
+
+        @Override public String toString() {
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("<");
+            for (int item : items) {
+
+                builder.append(item);
+                builder.append(",");
+            }
+            builder.append("(");
+            builder.append(level);
+            builder.append(")>");
+            return builder.toString();
         }
     }
 
-    public CandidateHashTree(int support_threshold) {
-        itemsets = new TreeMap<int[], int[]>(new CandidateComparator());
-        minsup = support_threshold;
+    private class Node {
+
+        Node[] next;
+        HashMap<Itemset, int[]> itemsets;
+
+        public Node(int offset) {                   // create index node
+
+            next = new Node[offset];
+            itemsets = null;
+        }
+
+        public Node(Itemset items){                 // create leaf node
+
+            next = null;
+            itemsets = new HashMap<Itemset, int[]>();
+            itemsets.put(items, new int[]{1});
+        }
+
+        public Node(Itemset items, int[] support){  // create leaf node
+
+            next = null;
+            itemsets = new HashMap<Itemset, int[]>();
+            itemsets.put(items, support);
+        }
+
+        public boolean isLeafNode(){ return itemsets != null; }
     }
 
-    public int size(){
-        return itemsets.size();
+    private Node root;
+    private int offset, size;
+    private double support_threshold;
+
+    public CandidateHashTree(int k, double threshold){
+
+        root = new Node(k);
+        offset = k;
+        support_threshold = threshold;
+        size = 0;
     }
 
-    /**
-     * Iterates over the itemsets and removes the itemsets
-     * that have counter value less than the threshold.
-     */
-    public void supportFiltering(){
+    public int size(){ return size; }
 
-        Iterator<Map.Entry<int[], int[]>> it = itemsets.entrySet().iterator();
-        while (it.hasNext()){
+    public void frequencyIncrement(int[] items){
 
-            Map.Entry<int[], int[]> entry = it.next();
-            if (entry.getValue()[0] < minsup){
+        int i;
+        boolean added = false;
+        Itemset newItemset = new Itemset(items, 0);
+        Node current = root, node;
+        while(newItemset.level < offset && !added){
 
-                it.remove();
+            i = newItemset.hashValue();
+            node = current.next[i];
+            if(node == null){                           // empty leaf node
+
+                current.next[i] = new Node(newItemset);
+                ++size; added = true;
+            } else if (node.isLeafNode()){              // leaf node
+
+                int[] support = node.itemsets.get(newItemset);
+                if(support != null){                        // already exists
+
+                    ++support[0]; added = true;
+                }else if(node.itemsets.size() < offset      // has space or
+                    || (newItemset.level + 1) == offset){   // maximum level reached
+
+                    node.itemsets.put(newItemset, new int[] {1});
+                    ++size; added = true;
+                } else {                                // create new index Node
+                                                        // & rehash old itemsets
+                    Node indexNode = new Node(offset);
+                    Itemset oldItems;
+                    current.next[i] = indexNode;    // unlink previous leaf
+                    for (Map.Entry<Itemset, int[]> entry : node.itemsets.entrySet()) {
+
+                        oldItems = entry.getKey();
+                        support = entry.getValue();
+                        oldItems.increaseLevel();   // increase level & rehash
+                        if(indexNode.next[oldItems.hashValue()] == null){
+
+                            indexNode.next[oldItems.hashValue()] = new Node(oldItems, support);
+                        } else {
+
+                            indexNode.next[oldItems.hashValue()].itemsets.put(oldItems, support);
+                        }
+                    }
+                    current = current.next[i];          // continue on the new index node
+                    newItemset.increaseLevel();
+                }
+            } else {                                // index node
+
+                newItemset.increaseLevel();
+                current = node;
             }
         }
-    }
 
-    /**
-     * Increases the counter fo the corresponding @itemset.
-     * If itemset does not exists, adds @itemset with counter value = 1.
-     * @param itemset
-     */
-    public void frequencyIncrement(int[] itemset){
-
-        int[] counter = itemsets.get(itemset);
-        if (counter == null){
-
-            itemsets.put(itemset, new int[] {1});
-        } else {
-
-            ++counter[0];
+        if(!added){
+            throw new RuntimeException("Unable to insert new itemset");
         }
     }
 
-    /**
-     * Generates k candidate itemsets
-     * using F_(k-1)xF_(k-1) method without the (k-2)-itemsets frequency filtering.
-     */
-    public CandidateHashTree aprioriGen(){
+    public void supportFiltering() {
 
-        CandidateHashTree newItemsets = new CandidateHashTree(minsup);
-        if (itemsets.size() < 1) return newItemsets;
+        int minsup = (int) (support_threshold*size);
+        ArrayDeque<Node> q = new ArrayDeque<Node>();
+        q.add(root);
+        Node node;
+        while(!q.isEmpty()){
 
-        int[] a,b;
-        int i = 0, n = itemsets.firstEntry().getKey().length;
-        Iterator<Map.Entry<int[], int[]>> it1 = itemsets.entrySet().iterator(), it2;
-        while (it1.hasNext()) {
+            node = q.removeFirst();
+            if(node.isLeafNode()){
 
-            a = it1.next().getKey();
-            it2 = itemsets.entrySet().iterator();
-            while(it2.hasNext()){
+                Iterator<Map.Entry<Itemset, int[]>> it = node.itemsets.entrySet().iterator();
+                while(it.hasNext()){
 
-                b = it2.next().getKey();
-                for( i = 0; i < n - 1; i++){
-
-                    if ( (i == n-1) && (a[i] != a[i])) {
-
-                        break;
+                    Map.Entry<Itemset, int[]> entry = it.next();
+                    if(entry.getValue()[0] < minsup){
+                        it.remove();
+                        --size;
                     }
                 }
-                if (a[n-1] != b[n-1]){  // satisfy merge condition
-                    // TODO check k-2 itemsets frequency < minup
-                    int[] newItemset = new int[n + 1];
-                    System.arraycopy(a, 0, newItemset, 0, n);
-                    System.arraycopy(b, n-1, newItemset, n, 1);
-                    newItemsets.frequencyIncrement(newItemset);
+            } else{
+
+                for (int i =0; i < offset; i++){
+
+                    if(node.next[i] != null){
+
+                        q.add(node.next[i]);
+                    }
                 }
             }
         }
-        return newItemsets;
+
     }
 
-    /**
-     * Identify all candidates that belong to @transaction
-     * and increase their counter value
-     * @param transaction
-     */
-    public void supportCounting(int[] transaction){
 
-        if (itemsets.size() < 1) return;
-        int k = itemsets.firstEntry().getKey().length, n = transaction.length;
-        int c = Long.valueOf(CombinatoricsUtils.binomialCoefficient(n, k)).intValue();
+    public CandidateHashTree aprioriGen() {
+        return null;
+    }
 
-        CandidateHashTree candidates = new CandidateHashTree(minsup);
-        for(int i = 0; i < k; i++){         //  level
+    public void supportCounting(int[] transaction) {
+    }
 
+    @Override public String toString() {
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("\nCandidate Hash Tree\n");
+        builder.append("++++++++++++++++++++\n");
+        builder.append("<<itemset>, level, support>\n");
+        ArrayDeque<Node> q = new ArrayDeque<Node>();
+        q.add(root);
+        Node node;
+        while(!q.isEmpty()){
+
+            node = q.removeFirst();
+            if( node.next == null) {    // leaf
+                builder.append("<");
+                for (Map.Entry<Itemset, int[]> entry : node.itemsets.entrySet()) {
+                    builder.append("<<");
+                    for (int item : entry.getKey().items) {
+                        builder.append(item);
+                        builder.append(", ");
+                    }
+                    builder.append(">, ");
+                    builder.append(entry.getKey().level);
+                    builder.append(", ");
+                    builder.append(entry.getValue()[0]);
+                    builder.append(">\n");
+                }
+                builder.append(">\n");
+            } else if (node.itemsets == null){
+                builder.append("--\n");
+                for(int i = 0; i < offset; i++){
+                    if(node.next[i] != null) q.addLast(node.next[i]);
+                }
+            } else throw new RuntimeException("Something goes really bad!");
         }
+        builder.append("<<itemset>, level, support>\n");
+        return builder.toString();
     }
-
 }
