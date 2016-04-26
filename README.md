@@ -1,5 +1,6 @@
 Association Analysis
 --------------------
+Traditional Apriori Implementation, Big Data, Spring 2016, DIT NKUA
 
 * Loading latest MovieLens dataset ([here](http://grouplens.org/datasets/movielens/)) (small + full)
     - Tranform data into transactions (baskets) 
