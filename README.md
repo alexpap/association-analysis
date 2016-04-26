@@ -5,4 +5,4 @@ Association Analysis
     - Tranform data into transactions (baskets) 
     
 * Frequent Itemset Generation 
-    - Traditional Apriori first Itemset generation as described [here](http://www-users.cs.umn.edu/~kumar/dmbook/ch6.pdf)
+    - Traditional Apriori first Itemset generation as described [here](http://www-users.cs.umn.edu/~kumar/dmbook/ch6.pdf), using Hash Tree for candidates.
