@@ -1,5 +1,8 @@
 package m112.di.uoa.gr;
 
+import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.CombinatoricsUtils;
+import org.apache.commons.math3.util.MathUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -43,6 +46,37 @@ public class CandidateHashTree {
 
         public void increaseLevel(){ ++level; }
 
+        /**
+         * Let A = {a_1, a_2, ..., a_(l-1)} and B = {b_1, b_2, ..., b_(k-1)}
+         * where A is this itemset, B is the given @itemset
+         * @param itemset
+         * @return true if a_i == b_i (for i= 1,2, ..., k-2) and a_(k-1) != b_(k-1), else false
+         */
+        public boolean isMergable(Itemset itemset) {
+
+            if(itemset.items.length != items.length ) return false;
+            int i = 0, n = items.length - 1;
+            for(i = 0; i < n; i++){
+
+                if(items[i] != itemset.items[i]) break;
+            }
+            if( (i == n) && items[n] != itemset.items[n]) return true;
+            return false;
+        }
+
+        /**
+         * Create the union of this itemset and the given @itemset
+         * @param itemset
+         * @return the union
+         */
+        public int[] merge(Itemset itemset) {
+
+            int[] newset = new int[items.length + 1];
+            System.arraycopy(items, 0, newset, 0, items.length);
+            newset[items.length] = itemset.items[items.length-1];
+            return newset;
+        }
+
         @Override public String toString() {
 
             StringBuilder builder = new StringBuilder();
@@ -59,15 +93,18 @@ public class CandidateHashTree {
         }
     }
 
-    private class Node {
+    private static class Node {
 
+        private static int keyGen = 0;
         Node[] next;
         HashMap<Itemset, int[]> itemsets;
+        Integer key;
 
         public Node(int offset) {                   // create index node
 
             next = new Node[offset];
             itemsets = null;
+            key = ++keyGen;
         }
 
         public Node(Itemset items){                 // create leaf node
@@ -75,6 +112,7 @@ public class CandidateHashTree {
             next = null;
             itemsets = new HashMap<Itemset, int[]>();
             itemsets.put(items, new int[]{1});
+            key = ++keyGen;
         }
 
         public Node(Itemset items, int[] support){  // create leaf node
@@ -82,18 +120,32 @@ public class CandidateHashTree {
             next = null;
             itemsets = new HashMap<Itemset, int[]>();
             itemsets.put(items, support);
+            key = ++keyGen;
         }
 
         public boolean isLeafNode(){ return itemsets != null; }
+
+        @Override public String toString() {
+            return "Node{" +
+                "next=" + Arrays.toString(next) +
+                ", itemsets=" + itemsets +
+                ", key=" + key +
+                '}';
+        }
     }
 
+    // root node of the HashTree
     private Node root;
+    // helpful map for leaf nodes only
+    // easy to calculate self cartesian product of leaf nodes.
+    private HashMap<Integer, Node> leafs;
     private int offset, size;
     private double support_threshold;
 
     public CandidateHashTree(int k, double threshold){
 
         root = new Node(k);
+        leafs = new HashMap<Integer, Node>();
         offset = k;
         support_threshold = threshold;
         size = 0;
@@ -101,6 +153,12 @@ public class CandidateHashTree {
 
     public int size(){ return size; }
 
+    /**
+     * Increase the counter for the given itemset @items.
+     * If the given itemset does not exist,
+     * then new will created with counter value 1.
+     * @param items
+     */
     public void frequencyIncrement(int[] items){
 
         int i;
@@ -114,6 +172,7 @@ public class CandidateHashTree {
             if(node == null){                           // empty leaf node
 
                 current.next[i] = new Node(newItemset);
+                leafs.put(current.next[i].key, current.next[i]);
                 ++size; added = true;
             } else if (node.isLeafNode()){              // leaf node
 
@@ -130,6 +189,7 @@ public class CandidateHashTree {
                                                         // & rehash old itemsets
                     Node indexNode = new Node(offset);
                     Itemset oldItems;
+                    leafs.remove(current.next[i].key);
                     current.next[i] = indexNode;    // unlink previous leaf
                     for (Map.Entry<Itemset, int[]> entry : node.itemsets.entrySet()) {
 
@@ -159,46 +219,111 @@ public class CandidateHashTree {
         }
     }
 
+    /**
+     * Extract frequent itemsets using support threshold.
+     */
     public void supportFiltering() {
 
         int minsup = (int) (support_threshold*size);
-        ArrayDeque<Node> q = new ArrayDeque<Node>();
-        q.add(root);
-        Node node;
-        while(!q.isEmpty()){
+        Iterator<Map.Entry<Itemset, int[]>> it;
+        Map.Entry<Itemset, int[]> entry;
+        for (Map.Entry<Integer, Node> leafEntry : leafs.entrySet()) {
 
-            node = q.removeFirst();
-            if(node.isLeafNode()){
+            it = leafEntry.getValue().itemsets.entrySet().iterator();
+            while(it.hasNext()){
 
-                Iterator<Map.Entry<Itemset, int[]>> it = node.itemsets.entrySet().iterator();
-                while(it.hasNext()){
+                 entry = it.next();
+                if(entry.getValue()[0] < minsup){
+                    it.remove();
+                    --size;
+                }
+            }
+        }
+    }
 
-                    Map.Entry<Itemset, int[]> entry = it.next();
-                    if(entry.getValue()[0] < minsup){
-                        it.remove();
-                        --size;
+    /**
+     * Candidate Generation using F_(k-1) X F_(k-1) Method
+     * only for each leaf node.
+     * @return F_(k) candidates hash tree
+     */
+    public CandidateHashTree aprioriGen() {
+
+        CandidateHashTree candidates = new CandidateHashTree(offset + 1, support_threshold);
+        Iterator<Map.Entry<Itemset, int[]>> it1, it2;
+        Map.Entry<Itemset, int[]> entry1, entry2;
+        for (Map.Entry<Integer, Node> entry : leafs.entrySet()) {          // for each leaf
+
+            it1 = entry.getValue().itemsets.entrySet().iterator();
+            it2 = entry.getValue().itemsets.entrySet().iterator();
+            while(it1.hasNext()){                                          // for each itemset
+
+                entry1 = it1.next();
+                while (it2.hasNext()) {                                     // for each itemset
+
+                    entry2 = it2.next();
+                    if (entry1.getKey().isMergable(entry2.getKey())) {      // check condition
+
+                        candidates.frequencyIncrement(entry1.getKey().merge(entry2.getKey()));
                     }
                 }
-            } else{
+            }
+        }
+        // @TODO ensure k-2 subsets are frequent
+        return candidates;
+    }
 
-                for (int i =0; i < offset; i++){
 
-                    if(node.next[i] != null){
+    private static void subset(
+        int[] transaction,
+        BitSet used,
+        int k,
+        int start,
+        int remain,
+        ArrayList<int[]> subsets){
 
-                        q.add(node.next[i]);
-                    }
+        if(remain == 0){
+
+            int[] set = new int[k];
+            int j = 0, i = used.nextSetBit(0);
+            while(i > 0 ){
+
+                set[j] = transaction[i];
+                j++;
+                i = used.nextSetBit(i + 1);
+            }
+            subsets.add(set);
+        } else if( start + remain <= transaction.length){
+
+            for(int i =start; i < transaction.length; i++){
+
+                if(used.nextSetBit(i) == -1){
+                    used.set(i, true);
+                    CandidateHashTree.subset(transaction, used, k, i + 1, remain - 1, subsets);
+                    used.set(i, false);
                 }
             }
         }
 
     }
 
-
-    public CandidateHashTree aprioriGen() {
-        return null;
-    }
-
+    /**
+     * Candidate Pruning
+     * @param transaction
+     */
     public void supportCounting(int[] transaction) {
+
+        CandidateHashTree prefixTree = new CandidateHashTree(offset, support_threshold);
+        ArrayList<int[]> subsets = new ArrayList<int[]>();
+        BitSet used = new BitSet(transaction.length);
+        used.clear();
+        CandidateHashTree.subset(transaction, used, offset, 0, offset, subsets);
+        for (int[] subset : subsets) {
+            for (int i : subset) {
+                log.info(i);
+            }
+            log.info("----");
+        }
+
     }
 
     @Override public String toString() {
