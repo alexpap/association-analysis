@@ -14,7 +14,7 @@ public class CandidatesHashTree {
     private class Itemset {
 
         int[] items;
-        int level;
+        int   level;
 
         public Itemset() {
         }

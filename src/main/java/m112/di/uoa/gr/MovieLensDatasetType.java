@@ -7,6 +7,5 @@ public enum MovieLensDatasetType {
     ml_1m,
     ml_10m,
     ml_100k,
-    ml_latest_small,
-    ml_latest
+    ml_latest_small
 }

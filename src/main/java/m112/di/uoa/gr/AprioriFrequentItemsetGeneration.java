@@ -45,10 +45,21 @@ public class AprioriFrequentItemsetGeneration {
     }
 
     /**
-     * Pre-process the latest movieLens dataset given as @zipPath
-     * @param zipPath
+     * Pre-process anyone of the available movielens dataset.
+     * @param datasetType
      */
-    public void preprocess(String zipPath){
+    public void preprocess(MovieLensDatasetType datasetType){
+
+        String zipPath = null;
+        if(MovieLensDatasetType.ml_latest_small.equals(datasetType))
+            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
+        else if(MovieLensDatasetType.ml_1m.equals(datasetType))
+            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-1m.zip").getPath();
+        else if(MovieLensDatasetType.ml_10m.equals(datasetType))
+            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-10m.zip").getPath();
+        else if(MovieLensDatasetType.ml_100k.equals(datasetType))
+            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-100k.zip").getPath();
+        else throw new RuntimeException("Unable to locate " + datasetType.toString() + " dataset.");
 
         long tstart = System.currentTimeMillis();
         try{
@@ -211,13 +222,8 @@ public class AprioriFrequentItemsetGeneration {
     }
 
     public static void main(String[] args){
-        String path =
-              // for the small the support factor tested with 0.01/0.02
-            AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
-              // for the large the support factor tested with  0.05/0.1
-//              AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest.zip").getPath();
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.005);
-        frequentItemset.preprocess(path);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.001);
+        frequentItemset.preprocess(MovieLensDatasetType.ml_latest_small);
         ArrayList<CandidatesHashTree> itemsets = frequentItemset.generateItemsets();
         // log the candidate trees
         for (CandidatesHashTree itemset : itemsets) {
