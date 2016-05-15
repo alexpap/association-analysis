@@ -5,11 +5,14 @@ import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
+ * Apriori k-itemset candidates  Hash Tree capable of :
+ *  - itemset frequency increment
+ *  - support factor itemset filtering
+ *  - new k+1-itemset generation (apriori-gen) using F_(k-1)xF_(k-1) method
+ *  - transaction support counting
  * @author alexpap
  */
-public class CandidatesHashTree {
-
-    private static final Logger log = Logger.getLogger(CandidatesHashTree.class);
+public class AprioriCandidatesHashTree {
 
     private class Itemset {
 
@@ -139,7 +142,7 @@ public class CandidatesHashTree {
     private int offset, size;
     private double threshold;
 
-    public CandidatesHashTree(int k, double minsupp) {
+    public AprioriCandidatesHashTree(int k, double minsupp) {
 
         root = new Node(k);
         offset = k;
@@ -330,9 +333,9 @@ public class CandidatesHashTree {
      * only for each leaf node.
      * @return F_(k) candidates hash tree
      */
-    public CandidatesHashTree aprioriGen() {
+    public AprioriCandidatesHashTree aprioriGen() {
 
-        CandidatesHashTree candidates = new CandidatesHashTree(offset + 1, threshold);
+        AprioriCandidatesHashTree candidates = new AprioriCandidatesHashTree(offset + 1, threshold);
         ArrayList<Itemset> itemsets = getItemsets();
         for(int i = 0; i < itemsets.size() - offset; i ++) {
 
@@ -344,7 +347,6 @@ public class CandidatesHashTree {
                 }
             }
         }
-        // @TODO ensure that k-2 subsets are frequent
         return candidates;
     }
 
@@ -358,6 +360,5 @@ public class CandidatesHashTree {
 
             frequencyIncrementWithoutAddition(transaction, i);
         }
-
     }
 }

@@ -3,7 +3,6 @@ package m112.di.uoa.gr;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -11,14 +10,12 @@ import java.util.zip.ZipFile;
 
 /**
  * A-priori, Support-base pruning
- * TODO checkout TreeHash to avoid iterating over all the k-itemsets each time
- * TODO checkout tree shrink while deleting
  *@author alexpap
  */
 public class AprioriFrequentItemsetGeneration {
 
     private static final Logger log = Logger.getLogger(AprioriFrequentItemsetGeneration.class);
-    private ArrayList<CandidatesHashTree> frequentItemsets;
+    private ArrayList<AprioriCandidatesHashTree> frequentItemsets;
     private HashMap<int[], String> items;
     private int[][] transactions;
     private double threshold, minsupp;
@@ -38,7 +35,7 @@ public class AprioriFrequentItemsetGeneration {
      */
     public AprioriFrequentItemsetGeneration(double support_threshold) {
 
-        frequentItemsets = new ArrayList<CandidatesHashTree>();
+        frequentItemsets = new ArrayList<AprioriCandidatesHashTree>();
         frequentItemsets.add(null);  // skip k = 0
         items = new HashMap<int[], String>();
         transactions = null;
@@ -150,7 +147,7 @@ public class AprioriFrequentItemsetGeneration {
             try {
                 HashMap<Integer, TreeSet<Integer>> baskets = new HashMap<Integer, TreeSet<Integer>>();
                 minsupp = threshold * items.size();
-                CandidatesHashTree firstItemsets = new CandidatesHashTree(1, minsupp);
+                AprioriCandidatesHashTree firstItemsets = new AprioriCandidatesHashTree(1, minsupp);
                 String line = "";
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -221,7 +218,7 @@ public class AprioriFrequentItemsetGeneration {
      * Generates k frequent itemsets
      * @return list of frequent itemsets
      */
-    public ArrayList<CandidatesHashTree> generateItemsets(){
+    public ArrayList<AprioriCandidatesHashTree> generateItemsets(){
 
         log.debug("****************************************");
         int k = 1;
@@ -235,7 +232,7 @@ public class AprioriFrequentItemsetGeneration {
             + "(" + String.valueOf(System.currentTimeMillis() - tstart) + " ms, "
             + getMemoryMBUsage()+ " MB)");
 
-        CandidatesHashTree currentItemsets;
+        AprioriCandidatesHashTree currentItemsets;
         do {
             ++k;
             log.debug("Try to generate " + k + "-itemsets ...");
@@ -262,7 +259,7 @@ public class AprioriFrequentItemsetGeneration {
 
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.1);
         frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
-        ArrayList<CandidatesHashTree> itemsets = frequentItemset.generateItemsets();
+        ArrayList<AprioriCandidatesHashTree> itemsets = frequentItemset.generateItemsets();
 
     }
 }
