@@ -11,16 +11,16 @@ import java.util.zip.ZipFile;
 /**
  * A-priori, Support-base pruning
  * TODO checkout TreeHash to avoid iterating over all the k-itemsets each time
- *
+ * TODO checkout tree shrink while deleting
  *@author alexpap
  */
 public class AprioriFrequentItemsetGeneration {
 
     private static final Logger log = Logger.getLogger(AprioriFrequentItemsetGeneration.class);
-    private ArrayList<CandidateHashTree> frequentItemsets;
+    private ArrayList<CandidatesHashTree> frequentItemsets;
     private HashMap<int[], String> items;
     private int[][] transactions;
-    private double threshold;
+    private double threshold, minsupp;
 
     /**
      * Calculate the current memory usage in MBs
@@ -37,7 +37,7 @@ public class AprioriFrequentItemsetGeneration {
      */
     public AprioriFrequentItemsetGeneration(double support_threshold) {
 
-        frequentItemsets = new ArrayList<CandidateHashTree>();
+        frequentItemsets = new ArrayList<CandidatesHashTree>();
         frequentItemsets.add(null);  // skip k = 0
         items = new HashMap<int[], String>();
         transactions = null;
@@ -45,7 +45,7 @@ public class AprioriFrequentItemsetGeneration {
     }
 
     /**
-     * Pre-process the latest movieLens dataset ginen as @zipPath
+     * Pre-process the latest movieLens dataset given as @zipPath
      * @param zipPath
      */
     public void preprocess(String zipPath){
@@ -108,7 +108,8 @@ public class AprioriFrequentItemsetGeneration {
 
             try {
                 HashMap<Integer,TreeSet<Integer>> baskets = new HashMap<Integer,TreeSet<Integer>>();
-                CandidateHashTree firstItemsets = new CandidateHashTree(1, threshold);
+                minsupp = threshold * items.size();
+                CandidatesHashTree firstItemsets = new CandidatesHashTree(1, minsupp);
                 String line = "";
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -179,30 +180,32 @@ public class AprioriFrequentItemsetGeneration {
      * Generates k frequent itemsets
      * @return list of frequent itemsets
      */
-    public ArrayList<CandidateHashTree> generateItemsets(){
+    public ArrayList<CandidatesHashTree> generateItemsets(){
 
         int k = 1;
-
         // {Find all frequent 1-itemsets}
         // note that 1-itemsets was generated at the pre-processing phase.
-        log.debug("1-itemsets sizeof " + frequentItemsets.get(k).size() + " exec support filtering ...");
+        log.debug("1-itemsets created sizeof " + frequentItemsets.get(k).size());
+        log.debug("Support filtering ...\"");
         frequentItemsets.get(k).supportFiltering();
         log.debug("1-itemsets created sizeof " + frequentItemsets.get(k).size());
 
-        CandidateHashTree currentItemsets;
+        CandidatesHashTree currentItemsets;
         do {
             ++k;
-            log.debug("Try to generate "+k+"-itemsets ...");
+            log.debug("Try to generate " + k + "-itemsets ...");
             currentItemsets = frequentItemsets.get(k-1).aprioriGen();
-            log.debug("Support counting ...");
-            for(int i = 0; i < transactions.length; i++){
+            if( currentItemsets.size() > 0) {
+                log.debug("Support counting ...");
+                for (int i = 0; i < transactions.length; i++) {
 
-                currentItemsets.supportCounting(transactions[i]);
+                    currentItemsets.supportCounting(transactions[i]);
+                }
+                log.debug("Support filtering ...");
+                currentItemsets.supportFiltering();
+                frequentItemsets.add(currentItemsets);
+                log.debug(k + "-itemsets created size of " + currentItemsets.size());
             }
-            log.debug("Support filtering ...");
-            currentItemsets.supportFiltering();
-            frequentItemsets.add(currentItemsets);
-            log.debug(k + "-itemsets created size of " + currentItemsets.size());
         }while(currentItemsets.size() > 0);
         return frequentItemsets;
     }
@@ -213,13 +216,13 @@ public class AprioriFrequentItemsetGeneration {
             AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
               // for the large the support factor tested with  0.05/0.1
 //              AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest.zip").getPath();
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.03);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.005);
         frequentItemset.preprocess(path);
-        ArrayList<CandidateHashTree> itemsets = frequentItemset.generateItemsets();
+        ArrayList<CandidatesHashTree> itemsets = frequentItemset.generateItemsets();
         // log the candidate trees
-        for (CandidateHashTree itemset : itemsets) {
+        for (CandidatesHashTree itemset : itemsets) {
             if(itemset!= null) {
-                log.info(itemset.size());
+                log.info("itemset size : " + itemset.size());
             }
         }
 
