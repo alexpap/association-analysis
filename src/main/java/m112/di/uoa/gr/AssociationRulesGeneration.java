@@ -11,11 +11,11 @@ public class AssociationRulesGeneration {
 
     public class Node {
         private TreeSet<Integer> list_left;
-        private TreeSet<Integer> list_right;
+        private ArrayList<Integer> list_right;
     }
 
     private int last, last2;
-    private TreeSet<Integer> itemset;
+    private List<Integer> itemset;
     private Node node;
     
     public void apriori_gen(List<Node> CandidateRules, int k) {
@@ -25,16 +25,16 @@ public class AssociationRulesGeneration {
             node = new Node();
             ArrayList<Node> new_CandidateRules = new ArrayList<Node>();
 
-            for (int i = 0; i <= CandidateRules.size() - k; i++) {
+            for (int i = 0; i <= CandidateRules.size() - 1; i++) {
 
                 for (int j = i + 1; j < CandidateRules.size(); j++) {
-                    last = CandidateRules.get(j).list_right.last();
-                    last2 = CandidateRules.get(i).list_right.last();
+                    last = CandidateRules.get(j).list_right.get(CandidateRules.get(i).list_right.size()-1);
+                    last2 = CandidateRules.get(i).list_right.get(CandidateRules.get(i).list_right.size()-1);
 
                     node.list_left = new TreeSet<Integer>(CandidateRules.get(i).list_left);
-                    node.list_right = new TreeSet<Integer>(CandidateRules.get(i).list_right);
+                    node.list_right = new ArrayList<Integer>(CandidateRules.get(i).list_right);
 
-                    if (CandidateRules.get(i).list_right.headSet(last2).containsAll(CandidateRules.get(j).list_right.headSet(last))) {
+                    if (CandidateRules.get(i).list_right.subList(0, CandidateRules.get(1).list_right.size()-1).containsAll(CandidateRules.get(j).list_right.subList(0, CandidateRules.get(j).list_right.size()-1))) {
                         node.list_left.addAll(CandidateRules.get(j).list_left);
                         node.list_right.add(last);
                     } else {
@@ -49,14 +49,14 @@ public class AssociationRulesGeneration {
                     node = new Node();
                 }
             }
-            /*
+            
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             System.out.println(k);
             for (int i = 0; i < new_CandidateRules.size(); i++) {
                 System.out.println(new_CandidateRules.get(i).list_left + " -> " + new_CandidateRules.get(i).list_right);
             }
             System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            */
+            
             k--;
 
             CandidateRules.clear();
@@ -64,7 +64,7 @@ public class AssociationRulesGeneration {
         }
     }
 
-    public AssociationRulesGeneration(TreeSet itemset) {
+    public AssociationRulesGeneration(List itemset) {
         this.itemset=itemset;
         initialize();
     }
@@ -83,19 +83,20 @@ public class AssociationRulesGeneration {
             i_temp = iterator.next();
             node.list_left.remove(i_temp);
             
-            node.list_right=new TreeSet<Integer>();
+            node.list_right=new ArrayList<Integer>();
             node.list_right.add(i_temp);
+            
 
             CandidateRules.add(node);           
         }
-        /*
+        
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         System.out.println(k);
         for (int i = 0; i < CandidateRules.size(); i++) {
             System.out.println(CandidateRules.get(i).list_left + " -> " + CandidateRules.get(i).list_right);
         }
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        */
+        
         k--;
 
         apriori_gen(CandidateRules, k);
