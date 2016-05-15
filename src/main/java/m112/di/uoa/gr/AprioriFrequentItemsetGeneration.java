@@ -3,6 +3,7 @@ package m112.di.uoa.gr;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -48,30 +49,56 @@ public class AprioriFrequentItemsetGeneration {
      * Pre-process anyone of the available movielens dataset.
      * @param datasetType
      */
-    public void preprocess(MovieLensDatasetType datasetType){
+    public void preprocess(MovieLensDatasetType datasetType) {
 
-        String zipPath = null;
-        if(MovieLensDatasetType.ml_latest_small.equals(datasetType))
-            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
-        else if(MovieLensDatasetType.ml_1m.equals(datasetType))
-            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-1m.zip").getPath();
-        else if(MovieLensDatasetType.ml_10m.equals(datasetType))
+        log.debug("Input dataset " + datasetType.toString());
+        String zipPath = null, zipFileName, itemsFilename, moviesFilename, itemsep, moviessep;
+
+        if (MovieLensDatasetType.ml_100k.equals(datasetType)) {
+            zipPath =
+                AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-100k.zip").getPath();
+            zipFileName = "ml-100k/";
+            itemsFilename = "u.item";
+            moviesFilename = "u.data";
+            itemsep = "|";
+            moviessep = "\t";
+
+        } else if (MovieLensDatasetType.ml_1m.equals(datasetType)){
+            zipPath =
+                AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-1m.zip").getPath();
+            zipFileName = "ml-1M/";
+            itemsFilename = "movies.dat";
+            moviesFilename = "ratings.dat";
+            itemsep = "::";
+            moviessep = "::";
+        } else if(MovieLensDatasetType.ml_10m.equals(datasetType)){
             zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-10m.zip").getPath();
-        else if(MovieLensDatasetType.ml_100k.equals(datasetType))
-            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-100k.zip").getPath();
-        else throw new RuntimeException("Unable to locate " + datasetType.toString() + " dataset.");
+            zipFileName = "ml-10M100K/";
+            itemsFilename = "movies.dat";
+            moviesFilename = "ratings.dat";
+            itemsep = "::";
+            moviessep = "::";
+        } else if(MovieLensDatasetType.ml_latest_small.equals(datasetType)) {
+            zipPath =
+                AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
+            zipFileName = "ml-latest-small/";
+            itemsFilename = "movies.csv";
+            moviesFilename = "ratings.csv";
+            itemsep = ",";
+            moviessep = ",";
+        } else throw new RuntimeException("Unable to locate " + datasetType.toString() + " dataset.");
 
         long tstart = System.currentTimeMillis();
-        try{
+        try {
 
             // loading items (movies.csv)
             // keep only movieId, title
             log.debug("Try to load items ...");
             ZipFile zipFile = new ZipFile(zipPath);
-            String parent = zipPath.substring(zipPath.lastIndexOf("/") + 1).replace(".zip","/");
+            String parent = zipPath.substring(zipPath.lastIndexOf("/") + 1).replace(".zip", "/");
             InputStream inputStream =
-                zipFile.getInputStream(zipFile.getEntry(parent.concat("movies.csv")));
-            if (inputStream == null){
+                zipFile.getInputStream(zipFile.getEntry(zipFileName.concat(itemsFilename)));
+            if (inputStream == null) {
 
                 throw new RuntimeException("Unable to locate movielens movies.");
             }
@@ -85,40 +112,42 @@ public class AprioriFrequentItemsetGeneration {
 
                 while ((line = reader.readLine()) != null) {
 
-                    tokenizer = new StringTokenizer(line,",", false);
+                    tokenizer = new StringTokenizer(line, itemsep, false);
                     items.put(new int[] {Integer.parseInt(tokenizer.nextToken())}, tokenizer.nextToken());
                 }
-                log.debug(
-                    items.size() + " #Items loaded ("
-                        + String.valueOf(System.currentTimeMillis() - tstart)+ " ms, "
-                        + getMemoryMBUsage()+" MB)"
-                );
-            }finally{
+                log.debug(items.size() + " #Items loaded (" + String
+                    .valueOf(System.currentTimeMillis() - tstart) + " ms, " + getMemoryMBUsage()
+                    + " MB)");
+            } finally {
 
-                try { if (inputStream != null) {inputStream.close();}
-                } catch (Throwable ignore){}
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (Throwable ignore) {
+                }
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
             throw new RuntimeException("Internal error occurred", ex);
         }
 
         tstart = System.currentTimeMillis();
-        try{
+        try {
 
             // loading ratings.csv in order to create movie baskets
             // and the first itemset by skipping ratings.
             log.debug("Try to load baskets ...");
             ZipFile zipFile = new ZipFile(zipPath);
-            String parent = zipPath.substring(zipPath.lastIndexOf("/") + 1).replace(".zip","/");
-            InputStream inputStream = zipFile.getInputStream(zipFile.getEntry( parent.concat("ratings.csv")));
-            if (inputStream == null){
+            String parent = zipPath.substring(zipPath.lastIndexOf("/") + 1).replace(".zip", "/");
+            InputStream inputStream = zipFile.getInputStream(zipFile.getEntry(zipFileName.concat(moviesFilename)));
+            if (inputStream == null) {
 
                 throw new RuntimeException("Unable to locate movielens u.data.");
             }
 
             try {
-                HashMap<Integer,TreeSet<Integer>> baskets = new HashMap<Integer,TreeSet<Integer>>();
+                HashMap<Integer, TreeSet<Integer>> baskets = new HashMap<Integer, TreeSet<Integer>>();
                 minsupp = threshold * items.size();
                 CandidatesHashTree firstItemsets = new CandidatesHashTree(1, minsupp);
                 String line = "";
@@ -128,13 +157,13 @@ public class AprioriFrequentItemsetGeneration {
 
                 while ((line = reader.readLine()) != null) {
 
-                    tokenizer = new StringTokenizer(line, ",", false);
+                    tokenizer = new StringTokenizer(line, moviessep, false);
                     Integer ukey = Integer.valueOf(tokenizer.nextToken());
                     Integer ikey = Integer.valueOf(tokenizer.nextToken());
 
                     // add new item into the user basket
                     TreeSet<Integer> ubasket = baskets.get(ukey);
-                    if (ubasket == null){
+                    if (ubasket == null) {
 
                         baskets.put(ukey, (ubasket = new TreeSet<Integer>()));
                     }
@@ -144,20 +173,17 @@ public class AprioriFrequentItemsetGeneration {
                     firstItemsets.frequencyIncrement(new int[] {ikey});
                 }
                 frequentItemsets.add(firstItemsets);
-                log.debug(
-                    baskets.size() + " #Baskets loaded ("
-                        + String.valueOf(System.currentTimeMillis() - tstart)+ "ms, "
-                        + getMemoryMBUsage() +" MB)"
-                );
+                log.debug(baskets.size() + " #Baskets loaded (" + String
+                    .valueOf(System.currentTimeMillis() - tstart) + "ms, " + getMemoryMBUsage()
+                    + " MB)");
                 log.debug(
                     firstItemsets.size() + " #1-itemset without support counting created ("
-                        + String.valueOf(System.currentTimeMillis() - tstart)+ "ms, "
-                        + getMemoryMBUsage() +" MB)"
-                );
+                        + String.valueOf(System.currentTimeMillis() - tstart) + "ms, "
+                        + getMemoryMBUsage() + " MB)");
                 tstart = System.currentTimeMillis();
                 log.debug("Try to format baskets ...");
                 transactions = new int[baskets.size()][];
-                int i =0;
+                int i = 0;
                 Iterator<Integer> it;
                 for (Map.Entry<Integer, TreeSet<Integer>> entry : baskets.entrySet()) {
                     TreeSet<Integer> basket = entry.getValue();
@@ -165,27 +191,30 @@ public class AprioriFrequentItemsetGeneration {
                     transactions[i] = new int[basket.size()];
 
                     int j = 0;
-                    while (it.hasNext()){
+                    while (it.hasNext()) {
                         transactions[i][j] = it.next();
                         ++j;
                     }
                     i++;
                 }
-                log.debug("Baskets formatted ("
-                    + String.valueOf(System.currentTimeMillis()-tstart) + " ms, "
-                    + getMemoryMBUsage() +" MB)"
-                );
-            }finally{
+                log.debug(
+                    "Baskets formatted (" + String.valueOf(System.currentTimeMillis() - tstart)
+                        + " ms, " + getMemoryMBUsage() + " MB)");
+            } finally {
 
-                try { if (inputStream != null) {inputStream.close();}
-                } catch (Throwable ignore){}
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                } catch (Throwable ignore) {
+                }
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
 
             throw new RuntimeException("Internal error occurred", ex);
         }
-    }
 
+    }
 
     /**
      * Generates k frequent itemsets
@@ -222,16 +251,10 @@ public class AprioriFrequentItemsetGeneration {
     }
 
     public static void main(String[] args){
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.001);
+
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.003);
         frequentItemset.preprocess(MovieLensDatasetType.ml_latest_small);
         ArrayList<CandidatesHashTree> itemsets = frequentItemset.generateItemsets();
-        // log the candidate trees
-        for (CandidatesHashTree itemset : itemsets) {
-            if(itemset!= null) {
-                log.info("itemset size : " + itemset.size());
-            }
-        }
-
 
     }
 }
