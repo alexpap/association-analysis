@@ -361,4 +361,28 @@ public class AprioriCandidatesHashTree {
             frequencyIncrementWithoutAddition(transaction, i);
         }
     }
+    private  static int i = 0;
+
+    public boolean haNext(){
+        i++;
+        if ( i  == 11){
+            return false;
+        }
+        return true;
+    }
+
+    public Itemset nextItemset(){
+        Itemset itemset = new Itemset();
+        itemset.items = new int[offset];
+        for (int item : itemset.items) {
+            item = 5;
+        }
+
+        return itemset;
+    }
+
+
+    public int getSupportFactor(Itemset items, int prefix){
+        return 0;
+    }
 }

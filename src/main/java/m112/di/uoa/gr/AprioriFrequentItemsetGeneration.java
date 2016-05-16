@@ -217,6 +217,7 @@ public class AprioriFrequentItemsetGeneration {
     /**
      * Generates k frequent itemsets
      * @return list of frequent itemsets
+     * TODO change api hasNext, getNext
      */
     public ArrayList<AprioriCandidatesHashTree> generateItemsets(){
 
@@ -254,12 +255,29 @@ public class AprioriFrequentItemsetGeneration {
         log.debug("****************************************");
         return frequentItemsets;
     }
+    private static ArrayList<AprioriCandidatesHashTree> trees = null;
+    private static int i = 0;
+    public boolean hasNext(){
+
+        if (trees == null) trees = generateItemsets();
+        if ( i == trees.size()) return false;
+        return true;
+    }
+
+    public AprioriCandidatesHashTree next(){
+        AprioriCandidatesHashTree tree = trees.get(i);
+        i++;
+        return tree;
+    }
 
     public static void main(String[] args){
 
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.1);
         frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
-        ArrayList<AprioriCandidatesHashTree> itemsets = frequentItemset.generateItemsets();
-
+//        ArrayList<AprioriCandidatesHashTree> itemsets = frequentItemset.generateItemsets();
+        while (frequentItemset.hasNext()){
+            AprioriCandidatesHashTree next = frequentItemset.next();
+            log.debug(next.size());
+        }
     }
 }
