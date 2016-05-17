@@ -12,97 +12,13 @@ import java.util.*;
  *  - transaction support counting
  * @author alexpap
  */
-public class AprioriCandidatesHashTree {
-
-    private class Itemset {
-
-        int[] items;
-        int   level;
-
-        public Itemset() {
-        }
-
-        @Override public boolean equals(Object o) {
-
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-
-            Itemset itemset = (Itemset) o;
-
-            return Arrays.equals(items, itemset.items);
-
-        }
-
-        @Override public int hashCode() {
-            return items[level];
-        }
-
-        public int hashValue() {
-            return items[level] % items.length;
-        }
-
-        public void increaseLevel() {
-            ++level;
-        }
-
-        /**
-         * Let A = {a_1, a_2, ..., a_(l-1)} and B = {b_1, b_2, ..., b_(k-1)}
-         * where A is this itemset, B is the given @itemset
-         *
-         * @param itemset
-         * @return true if a_i == b_i (for i= 1,2, ..., k-2) and a_(k-1) != b_(k-1), else false
-         */
-        public boolean isMergable(Itemset itemset) {
-
-            if (itemset.items.length != items.length) return false;
-            int i, n = items.length - 1;
-            for (i = 0; i < n; i++) {
-
-                if (items[i] != itemset.items[i])
-                    break;
-            }
-            if ((i == n) && items[n] != itemset.items[n])
-                return true;
-            return false;
-        }
-
-        /**
-         * Create the union of this itemset and the given @itemset
-         *
-         * @param itemset
-         * @return the union
-         */
-        public int[] merge(Itemset itemset) {
-
-            int[] newset = new int[items.length + 1];
-            System.arraycopy(items, 0, newset, 0, items.length);
-            newset[items.length] = itemset.items[items.length - 1];
-            return newset;
-        }
-
-        @Override public String toString() {
-
-            StringBuilder builder = new StringBuilder();
-            builder.append("<");
-            for (int item : items) {
-
-                builder.append(item);
-                builder.append(",");
-            }
-            builder.append("(");
-            builder.append(level);
-            builder.append(")>");
-            return builder.toString();
-        }
-    }
+public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
 
 
     private class Node {
 
         Node[] next;
-        HashMap<Itemset, int[]> itemsets;
+        HashMap<AprioriItemset, int[]> itemsets;
 
         public Node(int offset) {                   // create index node
 
@@ -110,17 +26,17 @@ public class AprioriCandidatesHashTree {
             itemsets = null;
         }
 
-        public Node(Itemset items) {                 // create leaf node
+        public Node(AprioriItemset items) {                 // create leaf node
 
             next = null;
-            itemsets = new HashMap<Itemset, int[]>();
+            itemsets = new HashMap<AprioriItemset, int[]>();
             itemsets.put(items, new int[] {1});
         }
 
-        public Node(Itemset items, int[] support) {  // create leaf node
+        public Node(AprioriItemset items, int[] support) {  // create leaf node
 
             next = null;
-            itemsets = new HashMap<Itemset, int[]>();
+            itemsets = new HashMap<AprioriItemset, int[]>();
             itemsets.put(items, support);
         }
 
@@ -136,11 +52,13 @@ public class AprioriCandidatesHashTree {
         }
     }
 
-
-    // root node of the HashTree
     private Node root;
     private int offset, size;
     private double threshold;
+    // support leafs iterator
+    private ArrayDeque<Node> queue;
+    private Iterator<Map.Entry<AprioriItemset, int[]>> leafIterator;
+    private int counter;
 
     public AprioriCandidatesHashTree(int k, double minsupp) {
 
@@ -148,6 +66,9 @@ public class AprioriCandidatesHashTree {
         offset = k;
         threshold = minsupp;
         size = 0;
+        queue = null;
+        leafIterator = null;
+        counter = 0;
     }
 
     public int size() {
@@ -162,57 +83,58 @@ public class AprioriCandidatesHashTree {
      */
     public void frequencyIncrement(int[] items) {
 
-        int i;
+        int i, v;
         boolean added = false;
-        Itemset newItemset = new Itemset();
-        newItemset.items = items;
-        newItemset.level = 0;
+        AprioriItemset newItemset = new AprioriItemset();
+        newItemset.setItems(items);
+        newItemset.setLevel(0);
 
         Node current = root, node;
-        while (newItemset.level < offset && !added) {
+        while (newItemset.getLevel() < offset && !added) {
 
             i = newItemset.hashValue();
             node = current.next[i];
-            if (node == null) {                           // empty leaf node
+            if (node == null) {                                 // empty leaf node
 
                 current.next[i] = new Node(newItemset);
                 ++size;
                 added = true;
-            } else if (node.isLeafNode()) {              // leaf node
+            } else if (node.isLeafNode()) {                     // leaf node
 
                 int[] support = node.itemsets.get(newItemset);
-                if (support != null) {                        // already exists
+                if (support != null) {                          // already exists
 
                     ++support[0];
                     added = true;
-                } else if (node.itemsets.size() < offset      // has space or
-                    || (newItemset.level + 1) == offset) {   // maximum level reached
+                } else if (node.itemsets.size() < offset        // has space or
+                    || (newItemset.getLevel() + 1) == offset) { // maximum level reached
 
                     node.itemsets.put(newItemset, new int[] {1});
                     ++size;
                     added = true;
-                } else {                                // create new index Node
-                    // & rehash old itemsets
+                } else {                                        // create new index Node
+                                                                // & rehash old itemsets
                     Node indexNode = new Node(offset);
-                    Itemset oldItems;
-                    current.next[i] = indexNode;    // unlink previous leaf
-                    for (Map.Entry<Itemset, int[]> entry : node.itemsets.entrySet()) {
+                    AprioriItemset oldItems;
+                    current.next[i] = indexNode;                // unlink previous leaf
+                    for (Map.Entry<AprioriItemset, int[]> entry : node.itemsets.entrySet()) {
 
                         oldItems = entry.getKey();
                         support = entry.getValue();
-                        oldItems.increaseLevel();   // increase level & rehash
-                        if (indexNode.next[oldItems.hashValue()] == null) {
+                        oldItems.increaseLevel();               // increase level & rehash
+                        v = oldItems.hashValue();
+                        if (indexNode.next[v] == null) {
 
-                            indexNode.next[oldItems.hashValue()] = new Node(oldItems, support);
+                            indexNode.next[v] = new Node(oldItems, support);
                         } else {
 
-                            indexNode.next[oldItems.hashValue()].itemsets.put(oldItems, support);
+                            indexNode.next[v].itemsets.put(oldItems, support);
                         }
                     }
-                    current = current.next[i];          // continue on the new index node
+                    current = current.next[i];                  // continue on the new index node
                     newItemset.increaseLevel();
                 }
-            } else {                                // index node
+            } else {                                            // index node
 
                 newItemset.increaseLevel();
                 current = node;
@@ -234,12 +156,12 @@ public class AprioriCandidatesHashTree {
 
         int i;
         boolean added = false;
-        Itemset newItemset = new Itemset();
-        newItemset.items = Arrays.copyOfRange(transaction, prefix, prefix + offset);
-        newItemset.level = 0;
+        AprioriItemset newItemset = new AprioriItemset();
+        newItemset.setItems(Arrays.copyOfRange(transaction, prefix, prefix + offset));
+        newItemset.setLevel(0);
 
         Node current = root, node;
-        while (newItemset.level < offset ) {
+        while (newItemset.getLevel() < offset ) {
 
             i = newItemset.hashValue();
             node = current.next[i];
@@ -262,9 +184,8 @@ public class AprioriCandidatesHashTree {
         }
     }
 
-
     /**
-     * Extract frequent itemsets using support threshold.
+     * Extract frequent AprioriItemsets using support threshold.
      */
     public void supportFiltering() {
 
@@ -276,14 +197,14 @@ public class AprioriCandidatesHashTree {
             node = q.removeFirst();
             if (node.isLeafNode()) {
 
-                Iterator<Map.Entry<Itemset, int[]>> it = node.itemsets.entrySet().iterator();
+                Iterator<Map.Entry<AprioriItemset, int[]>> it = node.itemsets.entrySet().iterator();
                 while (it.hasNext()) {
 
-                    Map.Entry<Itemset, int[]> entry = it.next();
+                    Map.Entry<AprioriItemset, int[]> entry = it.next();
                     if (entry.getValue()[0] < threshold) {
                         it.remove();
                         --size;
-                    }
+                    } else entry.getKey().setSupport(entry.getValue()[0]);
                 }
             } else {
 
@@ -298,8 +219,8 @@ public class AprioriCandidatesHashTree {
         }
     }
 
-    private ArrayList<Itemset> getItemsets(){
-        ArrayList<Itemset> itemsets = new ArrayList<Itemset>();
+    private ArrayList<AprioriItemset> getItemsets(){
+        ArrayList<AprioriItemset> itemsets = new ArrayList<AprioriItemset>();
         ArrayDeque<Node> q = new ArrayDeque<Node>();
         q.add(root);
         Node node;
@@ -308,10 +229,10 @@ public class AprioriCandidatesHashTree {
             node = q.removeFirst();
             if (node.isLeafNode()) {
 
-                Iterator<Map.Entry<Itemset, int[]>> it = node.itemsets.entrySet().iterator();
+                Iterator<Map.Entry<AprioriItemset, int[]>> it = node.itemsets.entrySet().iterator();
                 while (it.hasNext()) {
 
-                    Map.Entry<Itemset, int[]> entry = it.next();
+                    Map.Entry<AprioriItemset, int[]> entry = it.next();
                     itemsets.add(entry.getKey());
                 }
             } else {
@@ -336,12 +257,12 @@ public class AprioriCandidatesHashTree {
     public AprioriCandidatesHashTree aprioriGen() {
 
         AprioriCandidatesHashTree candidates = new AprioriCandidatesHashTree(offset + 1, threshold);
-        ArrayList<Itemset> itemsets = getItemsets();
+        ArrayList<AprioriItemset> itemsets = getItemsets();
         for(int i = 0; i < itemsets.size() - offset; i ++) {
 
             for(int j = i + 1; j < itemsets.size(); j++){
 
-                if(itemsets.get(i).isMergable(itemsets.get(j))){                            // check condition
+                if(itemsets.get(i).isMergeable(itemsets.get(j))){                            // check condition
 
                     candidates.frequencyIncrement(itemsets.get(i).merge(itemsets.get(j)));
                 }
@@ -361,28 +282,63 @@ public class AprioriCandidatesHashTree {
             frequencyIncrementWithoutAddition(transaction, i);
         }
     }
-    private  static int i = 0;
 
-    public boolean haNext(){
-        i++;
-        if ( i  == 11){
-            return false;
-        }
-        return true;
-    }
 
-    public Itemset nextItemset(){
-        Itemset itemset = new Itemset();
-        itemset.items = new int[offset];
-        for (int item : itemset.items) {
-            item = 5;
+    @Override public boolean hasNext() {
+
+        if(queue  == null && size > 0){             // 1st call
+
+            queue = new ArrayDeque<Node>();
+            queue.add(root);
+            return true;
         }
 
-        return itemset;
+        if(counter < size) {                        // n call
+
+            return true;
+        }
+        queue = null;                                // re-init
+        leafIterator = null;
+        counter = 0;
+        return false;
     }
 
+    @Override public AprioriItemset next() {
 
-    public int getSupportFactor(Itemset items, int prefix){
-        return 0;
+        if(!hasNext()) throw new NoSuchElementException();
+
+        if(leafIterator != null && leafIterator.hasNext()){
+            counter++;
+            return leafIterator.next().getKey();
+        }
+
+        Node node;
+        while(queue.size() > 0) {
+
+            node = queue.removeFirst();
+            if (node.isLeafNode()) {
+
+                leafIterator = node.itemsets.entrySet().iterator();
+                if (leafIterator.hasNext()) {
+
+                    counter++;
+                    return leafIterator.next().getKey();
+                }
+            } else {
+
+                for (int i = 0; i < offset; i++) {
+
+                    if (node.next[i] != null) {
+
+                        queue.add(node.next[i]);
+                    }
+                }
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    @Override public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
