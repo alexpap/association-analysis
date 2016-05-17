@@ -5,12 +5,9 @@
  */
 package m112.di.uoa.gr;
 
-import java.awt.Color;
-import java.io.File;
-import javax.swing.JFileChooser;
+import java.util.*;
 import javax.swing.SwingConstants;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.AbstractDocument;
 
 /**
  *
@@ -23,6 +20,10 @@ public class AssociationAnalysis extends javax.swing.JFrame {
      */
     public AssociationAnalysis() {
         initComponents();
+        ((AbstractDocument) jTextField5.getDocument()).setDocumentFilter(
+                new MyDocumentFilter());
+        ((AbstractDocument) jTextField4.getDocument()).setDocumentFilter(
+                new MyDocumentFilter());
     }
 
     /**
@@ -35,8 +36,6 @@ public class AssociationAnalysis extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -50,27 +49,23 @@ public class AssociationAnalysis extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        menuBar = new javax.swing.JMenuBar();
-        fileMenu = new javax.swing.JMenu();
-        openMenuItem = new javax.swing.JMenuItem();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jTextField4 = new javax.swing.JTextField();
+        jTextField5 = new javax.swing.JTextField();
+        jComboBox2 = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Association Analysis");
 
-        jLabel1.setText("File Path:");
-
-        jTextField1.setForeground(new java.awt.Color(204, 204, 204));
-        jTextField1.setText("File location...");
-
-        jButton1.setText("Browse");
-        jButton1.setActionCommand("");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
+        jLabel1.setText("File:");
 
         jButton2.setText("Run Apriori Algorithm");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Frequent ItemSets");
         jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
@@ -78,8 +73,10 @@ public class AssociationAnalysis extends javax.swing.JFrame {
         jLabel3.setText("Association Rules");
         jLabel3.setHorizontalAlignment(SwingConstants.CENTER);
 
+        jTextPane2.setEditable(false);
         jScrollPane2.setViewportView(jTextPane2);
 
+        jTextPane3.setEditable(false);
         jScrollPane3.setViewportView(jTextPane3);
 
         jLabel4.setText("Memory Usage: ");
@@ -90,25 +87,19 @@ public class AssociationAnalysis extends javax.swing.JFrame {
 
         jLabel7.setText("jLabel7");
 
-        jLabel8.setText("jLabel7");
+        jLabel8.setText("                                ");
 
-        jLabel9.setText("jLabel7");
+        jLabel9.setText("                                     ");
 
-        fileMenu.setMnemonic('f');
-        fileMenu.setText("File");
+        jLabel10.setText("Support: ");
 
-        openMenuItem.setMnemonic('o');
-        openMenuItem.setText("Open");
-        openMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openMenuItemActionPerformed(evt);
-            }
-        });
-        fileMenu.add(openMenuItem);
+        jLabel11.setText("Cofidence: ");
 
-        menuBar.add(fileMenu);
+        jTextField4.setText("0.50");
 
-        setJMenuBar(menuBar);
+        jTextField5.setText("0.10");
+
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "MovieLens 100K Dataset", "MovieLens 1M Dataset", "MovieLens 10M Dataset", "MovieLens Latest Small" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -119,18 +110,12 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jTextField1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton1))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jScrollPane2))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jScrollPane3)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -145,21 +130,38 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel9)))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(jLabel9))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel10)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(24, 24, 24)
+                                .addComponent(jLabel11)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 223, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTextField1)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel11)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(16, 16, 16)
                 .addComponent(jButton2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(jLabel7))
@@ -171,13 +173,13 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(jLabel9))
-                .addGap(26, 26, 26)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                     .addComponent(jScrollPane2))
                 .addContainerGap())
         );
@@ -185,31 +187,44 @@ public class AssociationAnalysis extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        String dataset=(String) jComboBox2.getSelectedItem();
+        jTextPane2.setText("");
+        jTextPane3.setText("");
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(Double.parseDouble(jTextField5.getText()));
+        double cofidence = Double.parseDouble(jTextField4.getText());
+        
+        if (dataset.equals("MovieLens 100K Dataset")) {
+            frequentItemset.preprocess(MovieLensDatasetType.ml_100k); 
+        } else if (dataset.equals("MovieLens 1M Dataset")) {
+            frequentItemset.preprocess(MovieLensDatasetType.ml_1m); 
+        } else if (dataset.equals("MovieLens 10M Dataset")) {
+            frequentItemset.preprocess(MovieLensDatasetType.ml_10m); 
+        } else if (dataset.equals("MovieLens Latest Small")) {
+            frequentItemset.preprocess(MovieLensDatasetType.ml_latest_small); 
+        }           
+        
+        List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
+        List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
+        boolean flag;
+        // iterate over trees
+        while (frequentItemset.hasNext()) {
 
-        JFileChooser fileChooser = new JFileChooser();
-        FileFilter filter1 = new FileNameExtensionFilter("zip", new String[]{"zip"});
-        fileChooser.setFileFilter(filter1);
-        int status = fileChooser.showOpenDialog(null);
-        if (status == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            jTextField1.setForeground(Color.black);
-            jTextField1.setText(selectedFile.getPath());
+            AprioriCandidatesHashTree tree = frequentItemset.next();
+            trees.add(tree);
+            flag = true;
+            // iterate over itemset
+            while (tree.hasNext()) {
+
+                AprioriItemset itemset = tree.next();
+                jTextPane2.setText(jTextPane2.getText()+Arrays.toString(itemset.getItems())+" -> "+itemset.getSupport()+"\n");
+                if (flag) {
+                    itemsetToSearch.add(itemset);
+                    flag = false;
+                }
+            }
         }
-
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void openMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
-        FileFilter filter1 = new FileNameExtensionFilter("zip", new String[]{"zip"});
-        fileChooser.setFileFilter(filter1);
-        int status = fileChooser.showOpenDialog(null);
-        if (status == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            jTextField1.setForeground(Color.black);
-            jTextField1.setText(selectedFile.getPath());
-        }
-    }//GEN-LAST:event_openMenuItemActionPerformed
+    }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -247,10 +262,11 @@ public class AssociationAnalysis extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenu fileMenu;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JComboBox<String> jComboBox2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -261,11 +277,10 @@ public class AssociationAnalysis extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField4;
+    private javax.swing.JTextField jTextField5;
     private javax.swing.JTextPane jTextPane2;
     private javax.swing.JTextPane jTextPane3;
-    private javax.swing.JMenuBar menuBar;
-    private javax.swing.JMenuItem openMenuItem;
     // End of variables declaration//GEN-END:variables
 
 }
