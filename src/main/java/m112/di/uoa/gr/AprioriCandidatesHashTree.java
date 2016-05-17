@@ -220,6 +220,7 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
     }
 
     private ArrayList<AprioriItemset> getItemsets(){
+
         ArrayList<AprioriItemset> itemsets = new ArrayList<AprioriItemset>();
         ArrayDeque<Node> q = new ArrayDeque<Node>();
         q.add(root);
@@ -284,6 +285,37 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
     }
 
 
+    public int getSupportByItemset(AprioriItemset itemset){
+
+
+        ArrayDeque<Node> q = new ArrayDeque<Node>();
+        q.add(root);
+        int[] support = null;
+        Node node;
+        while (!q.isEmpty()) {
+
+            node = q.removeFirst();
+            if (node.isLeafNode()) {
+
+                if((support = node.itemsets.get(itemset)) != null){
+
+                    return support[0];
+                }
+            } else {
+
+                for (int i = 0; i < offset; i++) {
+
+                    if (node.next[i] != null) {
+
+                        q.add(node.next[i]);
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
+    // iterator api
     @Override public boolean hasNext() {
 
         if(queue  == null && size > 0){             // 1st call

@@ -255,16 +255,36 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
     public static void main(String[] args){
 
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.3);
-        frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.05);
+        frequentItemset.preprocess(MovieLensDatasetType.ml_100k);
+
+        List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
+        List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
+        boolean flag;
+        // iterate over trees
         while (frequentItemset.hasNext()){
 
             AprioriCandidatesHashTree tree = frequentItemset.next();
+            trees.add(tree);
+            flag = true;
+            // iterate over itemset
             while(tree.hasNext()){
 
                 AprioriItemset itemset = tree.next();
                 log.debug(itemset);
+                if(flag){
+                    itemsetToSearch.add(itemset);
+                    flag = false;
+                }
             }
+        }
+
+        // search itemset on each tree
+        for(int i =0; i < itemsetToSearch.size(); i++){
+            log.debug("Itemset " + itemsetToSearch.get(i)
+                + " found on " + i + " tree with support "
+                + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
+            );
         }
     }
 }
