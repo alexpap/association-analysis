@@ -253,6 +253,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    
     public static void main(String[] args){
 
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.05);
@@ -271,7 +272,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             while(tree.hasNext()){
 
                 AprioriItemset itemset = tree.next();
-                log.debug(itemset);
+                log.debug(Arrays.toString(itemset.getItems()));
                 if(flag){
                     itemsetToSearch.add(itemset);
                     flag = false;
