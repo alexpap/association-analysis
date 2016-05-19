@@ -261,6 +261,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
         List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
+        AprioriItemset itemset = null;
         boolean flag;
         // iterate over trees
         while (frequentItemset.hasNext()){
@@ -271,20 +272,25 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             // iterate over itemset
             while(tree.hasNext()){
 
-                AprioriItemset itemset = tree.next();
+                itemset = tree.next();
                 log.debug(Arrays.toString(itemset.getItems()));
-                if(flag){
-                    itemsetToSearch.add(itemset);
-                    flag = false;
-                }
             }
+            if (itemset != null) itemsetToSearch.add(itemset);
         }
 
-        // search itemset on each tree
+        log.debug("Searching itemsets ...");
         for(int i =0; i < itemsetToSearch.size(); i++){
             log.debug("Itemset " + itemsetToSearch.get(i)
                 + " found on " + i + " tree with support "
                 + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
+            );
+        }
+
+        log.debug("Searching items ...");
+        for(int i =0; i < itemsetToSearch.size(); i++){
+            log.debug("Itemset " + itemsetToSearch.get(i)
+                + " found on " + i + " tree with support "
+                + trees.get(i).getSupportByItems(itemsetToSearch.get(i).getItems())
             );
         }
     }

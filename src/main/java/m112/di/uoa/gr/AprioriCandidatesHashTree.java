@@ -55,10 +55,11 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
     private Node root;
     private int offset, size;
     private double threshold;
-    // support leafs iterator
+    // support leafs iterator and search
     private ArrayDeque<Node> queue;
     private Iterator<Map.Entry<AprioriItemset, int[]>> leafIterator;
     private int counter;
+    private AprioriItemset itemset;
 
     public AprioriCandidatesHashTree(int k, double minsupp) {
 
@@ -69,6 +70,7 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         queue = null;
         leafIterator = null;
         counter = 0;
+        itemset = new AprioriItemset();
     }
 
     public int size() {
@@ -284,6 +286,11 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         }
     }
 
+    public int getSupportByItems(int[] items){
+
+        itemset.setItems(items);
+        return getSupportByItemset(itemset);
+    }
 
     public int getSupportByItemset(AprioriItemset itemset){
 
