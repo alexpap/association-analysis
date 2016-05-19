@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.zip.ZipFile;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * A-priori, Support-base pruning
@@ -253,18 +254,22 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static TreeSet combination(TreeSet results, int k, int n, int current_support, double min_confidence) {
+    public static int [] combination(int [] results, int k, int n, int current_support, float min_confidence) {
 
-        Object [] elements = results.toArray();
-    
+        List elements = new ArrayList();    
+        for (int i=0; i<results.length; i++) {
+            elements.add(results[i]);
+        }
+
         int combination[] = new int[k];
 
         int r = 0;
         int index = 0;
-
-        Object[] output= new Object[k];
-        Object[] right_part=elements.clone();
-        int temp_support;
+        int list2[];
+        List output;
+        List right_part;
+        int temp_support, i;
+        
         double current_cofidence;
         while (r >= 0) {
             
@@ -272,25 +277,38 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 combination[r] = index;
 
                 if (r == k - 1) {
-                    
+                    output= new ArrayList();
                     for (int z = 0; z < combination.length; z++) {
-                        output[z]=elements[combination[z]];
+                        output.add(elements.get(combination[z]));
+                    }                  
+                    
+                    right_part= new ArrayList(elements);
+                    right_part.removeAll(output);
+                    
+                    //log.debug(right_part);
+                    list2 = new int[output.size()];
+                    for (int z=0; z<output.size(); z++){
+                        list2[z]=(int)output.get(z);
                     }
-                    Arrays.asList(right_part).removeAll(Arrays.asList(output));
-                  
-                    temp_support=trees.get(right_part.length-1).getSupportByItemset(right_part);
-
+                    
+                    //log.debug(Arrays.toString(list2));
+                    temp_support=trees.get(list2.length-1).getSupportByItems(list2);
+                    
+                    current_cofidence = (float)(current_support/temp_support);
+                    log.debug("Rules from " + elements+ " " + current_support);
+                    log.debug("support "+temp_support+" "+output+" -> "+right_part);
+                           
+                    /*
                     current_cofidence = (double)(current_support/temp_support);
                     if (current_cofidence < min_confidence) {
-                        results.removeAll(Arrays.asList(right_part));
+                        Arrays.asList(results).removeAll(Arrays.asList(right_part));
                     } else {
                         log.debug("Confidence " + Arrays.toString(output) + " -> "
                                 + Arrays.toString(right_part) +" = "+ current_cofidence);  
                     }
-                    
+                    */
                     index++;
                 } else {
-
                     index = combination[r] + 1;
                     r++;
                 }
@@ -320,6 +338,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         while (frequentItemset.hasNext()){
 
             AprioriCandidatesHashTree tree = frequentItemset.next();
+           
             if (tree.size()>0) {
                 trees.add(tree);
             }
@@ -344,22 +363,28 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
             );
         }*/
-        double min_cofidence=0;
+        
+        for (int i=0; i<trees.size(); i++) {
+            while (trees.get(i).hasNext()) {
+                AprioriItemset current_itemset = trees.get(i).next();
+                log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
+            }
+        }
+        
+        float min_cofidence=0;
         int current_support;
         int k, n;
-        TreeSet results = new TreeSet();
+        int[] results;
         
         for (int i=1; i<trees.size(); i++) {
             while (trees.get(i).hasNext()) {
                 AprioriItemset current_itemset = trees.get(i).next();
-                log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
-                
-                results.addAll(Arrays.asList(current_itemset.getItems()));
-                
+                //log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
+                results = current_itemset.getItems().clone();
                 current_support=current_itemset.getSupport();
-                n=results.size();
+                n=results.length;
                 k=n-1;
-                while (k>=1 & results.size()>k) {
+                while (k>=1 & results.length>k) {
                     results=combination(results, k, n, current_support, min_cofidence);
                     k--;
                 }
