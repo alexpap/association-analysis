@@ -253,45 +253,117 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public static TreeSet combination(TreeSet results, int k, int n, int current_support, double min_confidence) {
+
+        Object [] elements = results.toArray();
+    
+        int combination[] = new int[k];
+
+        int r = 0;
+        int index = 0;
+
+        Object[] output= new Object[k];
+        Object[] right_part=elements.clone();
+        int temp_support;
+        double current_cofidence;
+        while (r >= 0) {
+            
+            if (index <= (n + (r - k))) {
+                combination[r] = index;
+
+                if (r == k - 1) {
+                    
+                    for (int z = 0; z < combination.length; z++) {
+                        output[z]=elements[combination[z]];
+                    }
+                    Arrays.asList(right_part).removeAll(Arrays.asList(output));
+                  
+                    temp_support=trees.get(right_part.length-1).getSupportByItemset(right_part);
+
+                    current_cofidence = (double)(current_support/temp_support);
+                    if (current_cofidence < min_confidence) {
+                        results.removeAll(Arrays.asList(right_part));
+                    } else {
+                        log.debug("Confidence " + Arrays.toString(output) + " -> "
+                                + Arrays.toString(right_part) +" = "+ current_cofidence);  
+                    }
+                    
+                    index++;
+                } else {
+
+                    index = combination[r] + 1;
+                    r++;
+                }
+            } else {
+                r--;
+                if (r > 0) {
+                    index = combination[r] + 1;
+                } else {
+                    index = combination[0] + 1;
+                }
+            }
+        }
+        return results;
+    }
+    
+    private static List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
     
     public static void main(String[] args){
 
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.05);
         frequentItemset.preprocess(MovieLensDatasetType.ml_100k);
 
-        List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
+        //List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
         List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
-        AprioriItemset itemset = null;
         boolean flag;
         // iterate over trees
         while (frequentItemset.hasNext()){
 
             AprioriCandidatesHashTree tree = frequentItemset.next();
-            trees.add(tree);
+            if (tree.size()>0) {
+                trees.add(tree);
+            }
             flag = true;
             // iterate over itemset
             while(tree.hasNext()){
 
-                itemset = tree.next();
-                log.debug(Arrays.toString(itemset.getItems()));
+                AprioriItemset itemset = tree.next();
+                //log.debug(Arrays.toString(itemset.getItems()));
+                if(flag){
+                    itemsetToSearch.add(itemset);
+                    flag = false;
+                }
             }
-            if (itemset != null) itemsetToSearch.add(itemset);
         }
 
-        log.debug("Searching itemsets ...");
+        // search itemset on each tree
+        /*
         for(int i =0; i < itemsetToSearch.size(); i++){
             log.debug("Itemset " + itemsetToSearch.get(i)
                 + " found on " + i + " tree with support "
                 + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
             );
-        }
-
-        log.debug("Searching items ...");
-        for(int i =0; i < itemsetToSearch.size(); i++){
-            log.debug("Itemset " + itemsetToSearch.get(i)
-                + " found on " + i + " tree with support "
-                + trees.get(i).getSupportByItems(itemsetToSearch.get(i).getItems())
-            );
+        }*/
+        double min_cofidence=0;
+        int current_support;
+        int k, n;
+        TreeSet results = new TreeSet();
+        
+        for (int i=1; i<trees.size(); i++) {
+            while (trees.get(i).hasNext()) {
+                AprioriItemset current_itemset = trees.get(i).next();
+                log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
+                
+                results.addAll(Arrays.asList(current_itemset.getItems()));
+                
+                current_support=current_itemset.getSupport();
+                n=results.size();
+                k=n-1;
+                while (k>=1 & results.size()>k) {
+                    results=combination(results, k, n, current_support, min_cofidence);
+                    k--;
+                }
+            }
         }
     }
 }
