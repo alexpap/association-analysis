@@ -62,10 +62,12 @@ public class AprioriAssociationRule {
                     
                     if (current_confidence < min_confidence) {
                         log.debug("Delete Confidence " + Arrays.toString(output_left) + " -> "
-                                + Arrays.toString(output_right) + " = " + current_confidence);
+                                + Arrays.toString(output_right) + " = " + current_confidence+ 
+                                " X "+ Arrays.toString(output_left)+" support "+temp_support);
                     } else {
                         log.debug("Confidence " + Arrays.toString(output_left) + " -> "
-                                + Arrays.toString(output_right));
+                                + Arrays.toString(output_right) + " = " + current_confidence+ 
+                                " X "+ Arrays.toString(output_left)+" support "+temp_support);
                         
                         for (int z = 0; z < combination_left.length; z++) {
                            if (updater[combination_left[z]] != 1) {
@@ -100,7 +102,6 @@ public class AprioriAssociationRule {
                 r++;
             }
         }       
-        log.debug(Arrays.toString(result));
         return result;
     }
 }

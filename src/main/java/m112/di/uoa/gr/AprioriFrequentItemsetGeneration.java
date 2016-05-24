@@ -291,14 +291,23 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
             );
         }
-
+        /*
         for (int i=0; i<trees.size(); i++) {
             while (trees.get(i).hasNext()) {
                 AprioriItemset current_itemset = trees.get(i).next();
                 log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
             }
         }
-
+        */
+        log.debug("Generating Association Rules ...");
+        
+        
+        AprioriAssociationRulesGeneration rulesGeneration = new AprioriAssociationRulesGeneration(trees);
+        while (rulesGeneration.hasNext()) {
+            rulesGeneration.next();
+        }
+        
+        /*
         double min_cofidence = 0.50;
         int current_support;
         int k, n;
@@ -319,6 +328,6 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                     k--;
                 }
             }
-        }
+        }*/
     }
 }
