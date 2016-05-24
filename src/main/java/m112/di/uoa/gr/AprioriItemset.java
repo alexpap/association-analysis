@@ -50,7 +50,7 @@ public class AprioriItemset {
     }
 
     public void increaseLevel() {
-        ++level;
+        level = (level == items.length - 1) ? items.length - 1 : level + 1;
     }
 
     public void increaseSupport(){ ++support;}

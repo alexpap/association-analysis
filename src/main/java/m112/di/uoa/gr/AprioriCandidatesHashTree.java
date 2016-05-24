@@ -157,7 +157,6 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
     private void frequencyIncrementWithoutAddition(int[] transaction, int prefix) {
 
         int i;
-        boolean added = false;
         AprioriItemset newItemset = new AprioriItemset();
         newItemset.setItems(Arrays.copyOfRange(transaction, prefix, prefix + offset));
         newItemset.setLevel(0);
@@ -289,34 +288,31 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
     public int getSupportByItems(int[] items){
 
         itemset.setItems(items);
-        return getSupportByItemset(itemset);
+        int supportByItemset = getSupportByItemset(itemset);
+        itemset.setItems(null);
+        return supportByItemset;
     }
 
     public int getSupportByItemset(AprioriItemset itemset){
 
+        itemset.setLevel(0);
+        int i;
+        Node current = root, node;
+        while (itemset.getLevel() < offset ) {
 
-        ArrayDeque<Node> q = new ArrayDeque<Node>();
-        q.add(root);
-        int[] support = null;
-        Node node;
-        while (!q.isEmpty()) {
+            i = itemset.hashValue();
+            node = current.next[i];
+            if (node == null) {                           // empty leaf node
 
-            node = q.removeFirst();
-            if (node.isLeafNode()) {
+                return -1;
+            } else if (node.isLeafNode()) {               // leaf node
 
-                if((support = node.itemsets.get(itemset)) != null){
+                int[] support = node.itemsets.get(itemset);
+                return support == null ? -1 : support[0];
+            } else {                                      // index node
 
-                    return support[0];
-                }
-            } else {
-
-                for (int i = 0; i < offset; i++) {
-
-                    if (node.next[i] != null) {
-
-                        q.add(node.next[i]);
-                    }
-                }
+                itemset.increaseLevel();
+                current = node;
             }
         }
         return -1;
