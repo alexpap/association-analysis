@@ -298,5 +298,27 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
             }
         }
+        
+        double min_cofidence = 0.50;
+        int current_support;
+        int k, n;
+        int elements[];
+        AprioriAssociationRule apriori_rules=new AprioriAssociationRule(trees);
+        
+        for (int i = 2; i < trees.size(); i++) {
+            while (trees.get(i).hasNext()) {
+                AprioriItemset current_itemset = trees.get(i).next();
+                log.debug("Current itemset "+Arrays.toString(current_itemset.getItems())+" itemset's support "+current_itemset.getSupport());
+                elements = current_itemset.getItems().clone();
+                current_support = current_itemset.getSupport();
+                
+                n = elements.length;
+                k = n - 1;
+                while (k >= 1 & elements.length > k) {
+                    elements = apriori_rules.combination(elements, k, n, current_support, min_cofidence);
+                    k--;
+                }
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 /**
  *
  */
+/*
 public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssociationRule> {
 
     private static final Logger log = Logger.getLogger(AprioriAssociationRulesGeneration.class);
@@ -44,3 +45,4 @@ public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssoci
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }
+*/
