@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.zip.ZipFile;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * A-priori, Support-base pruning
@@ -284,30 +283,31 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         }
 
         // search itemset on each tree
-
+        /*
         for(int i =0; i < itemsetToSearch.size(); i++){
             log.debug("Itemset " + itemsetToSearch.get(i)
                 + " found on " + i + " tree with support "
                 + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
             );
         }
-        /*
+        */
         for (int i=0; i<trees.size(); i++) {
             while (trees.get(i).hasNext()) {
                 AprioriItemset current_itemset = trees.get(i).next();
                 log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
             }
         }
-        */
+        
+        System.out.println("\n");
         log.debug("Generating Association Rules ...");
         
-        
+        /*
         AprioriAssociationRulesGeneration rulesGeneration = new AprioriAssociationRulesGeneration(trees);
         while (rulesGeneration.hasNext()) {
             rulesGeneration.next();
         }
+        */
         
-        /*
         double min_cofidence = 0.50;
         int current_support;
         int k, n;
@@ -317,17 +317,20 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         for (int i = 2; i < trees.size(); i++) {
             while (trees.get(i).hasNext()) {
                 AprioriItemset current_itemset = trees.get(i).next();
+                System.out.println("\n");
                 log.debug("Current itemset "+Arrays.toString(current_itemset.getItems())+" itemset's support "+current_itemset.getSupport());
                 elements = current_itemset.getItems().clone();
+                apriori_rules.elements_all=current_itemset.getItems().clone();
+                apriori_rules.update = new int[apriori_rules.elements_all.length];
+                apriori_rules.combination_left = new int[apriori_rules.elements_all.length];
                 current_support = current_itemset.getSupport();
 
-                n = elements.length;
-                k = n - 1;
-                while (k >= 1 & elements.length > k) {
-                    elements = apriori_rules.combination(elements, k, n, current_support, min_cofidence);
-                    k--;
+                k = 1;
+                while (k<=elements.length) {
+                    elements=apriori_rules.combination(elements, k, elements.length, current_support, min_cofidence);
+                    k++;
                 }
             }
-        }*/
+        }
     }
 }
