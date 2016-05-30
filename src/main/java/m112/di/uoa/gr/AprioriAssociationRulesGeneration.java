@@ -24,7 +24,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssoci
     }
 
     @Override public AprioriAssociationRule next() {
-       
+
     }
 
     @Override public void remove() {

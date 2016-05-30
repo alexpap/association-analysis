@@ -170,7 +170,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                     ubasket.add(ikey);
 
                     // update firstItemsets
-                    currentFrequentItemsets.frequencyIncrement(new int[] {ikey});
+                    currentFrequentItemsets.frequencyIncrement(new int[] {ikey}, false);
                 }
                 log.debug(baskets.size() + " #Baskets loaded (" + String
                     .valueOf(System.currentTimeMillis() - tstart) + "ms, " + getMemoryMBUsage()
@@ -227,13 +227,16 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
         log.debug("Apriori next itemsets generation ...");
         if(k == 1) {
+
             log.debug("1-itemsets already exits");
-            log.debug("Only Support filtering (k = 1) ...");
+            log.debug("Support filtering ...");
             currentFrequentItemsets.supportFiltering();
         } else {
 
             AprioriCandidatesHashTree currentItemsets = currentFrequentItemsets.aprioriGen();
+            log.debug(k + "-itemsets generated size of " + currentItemsets.size());
             if (currentItemsets.size() > 0) {
+
                 log.debug("Support counting ...");
                 for (int i = 0; i < transactions.length; i++) {
 
@@ -255,8 +258,8 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     
     public static void main(String[] args){
 
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.30);
-        frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.45);
+        frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
         List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
@@ -267,53 +270,55 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             AprioriCandidatesHashTree tree = frequentItemset.next();
            
             if (tree.size()>0) {
+
                 trees.add(tree);
             }
-            flag = true;
+//            flag = true;
             // iterate over itemset
             while(tree.hasNext()){
 
                 AprioriItemset itemset = tree.next();
-                //log.debug(Arrays.toString(itemset.getItems()));
-                if(flag){
-                    itemsetToSearch.add(itemset);
-                    flag = false;
-                }
+//                log.debug(itemset.toString());
+//                if(flag){
+//                    itemsetToSearch.add(itemset);
+//                    flag = false;
+//                }
             }
         }
 
         // search itemset on each tree
-        /*
-        for(int i =0; i < itemsetToSearch.size(); i++){
-            log.debug("Itemset " + itemsetToSearch.get(i)
-                + " found on " + i + " tree with support "
-                + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
-            );
-        }
-        */
+//        for(int i =0; i < itemsetToSearch.size(); i++){
+//            log.debug("Itemset " + itemsetToSearch.get(i)
+//                + " found on " + i + " tree with support "
+//                + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
+//            );
+//        }
+
         for (int i=0; i<trees.size(); i++) {
+
             while (trees.get(i).hasNext()) {
+
                 AprioriItemset current_itemset = trees.get(i).next();
-                log.debug(Arrays.toString(current_itemset.getItems())+" "+current_itemset.getSupport());
+                log.debug(Arrays.toString(current_itemset.getItems()) + " " + current_itemset.getSupport());
             }
         }
         
-        System.out.println("\n");
-        log.debug("Generating Association Rules ...");
-        
-        /*
-        AprioriAssociationRulesGeneration rulesGeneration = new AprioriAssociationRulesGeneration(trees);
-        while (rulesGeneration.hasNext()) {
-            rulesGeneration.next();
-        }
-        */
-        
+//        System.out.println("\n");
+//        log.debug("Generating Association Rules ...");
+//
+//        /*
+//        AprioriAssociationRulesGeneration rulesGeneration = new AprioriAssociationRulesGeneration(trees);
+//        while (rulesGeneration.hasNext()) {
+//            rulesGeneration.next();
+//        }
+//        */
+//
         double min_cofidence = 0.50;
         int current_support;
         int k, n;
         int elements[];
         AprioriAssociationRule apriori_rules=new AprioriAssociationRule(trees);
-        
+
         for (int i = 2; i < trees.size(); i++) {
             while (trees.get(i).hasNext()) {
                 AprioriItemset current_itemset = trees.get(i).next();

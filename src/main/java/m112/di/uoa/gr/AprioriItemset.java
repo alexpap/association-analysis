@@ -83,10 +83,21 @@ public class AprioriItemset {
      */
     public int[] merge(AprioriItemset itemset) {
 
-        int[] newset = new int[items.length + 1];
-        System.arraycopy(items, 0, newset, 0, items.length);
-        newset[items.length] = itemset.items[items.length - 1];
-        return newset;
+        int[] newarr = new int[items.length + 1];
+        int[] arr;
+        int val;
+        if(itemset.items[items.length -1] > items[items.length -1]) {
+
+            arr = items;
+            val = itemset.items[items.length - 1];
+        } else{
+
+            arr = itemset.items;
+            val = items[items.length - 1];
+        }
+        System.arraycopy(arr, 0, newarr, 0, items.length);
+        newarr[items.length] = val;
+        return newarr;
     }
 
     @Override public boolean equals(Object o) {
