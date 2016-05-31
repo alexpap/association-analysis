@@ -64,9 +64,9 @@ public class AprioriAssociationRule {
                     current_confidence = (double) current_support / temp_support;
                     
                     if (current_confidence < min_confidence) {
-                        log.debug("Delete Confidence " + Arrays.toString(output_left) + " -> "
-                                + Arrays.toString(output_right) + " = " + current_confidence
-                                + " X " + Arrays.toString(output_left) + " support " + temp_support);
+                        //log.debug("Delete Confidence " + Arrays.toString(output_left) + " -> "
+                                //+ Arrays.toString(output_right) + " = " + current_confidence
+                                //+ " X " + Arrays.toString(output_left) + " support " + temp_support);
                         
                         for (i=0; i<output_right.length; i++) {
                             update[Arrays.binarySearch(elements_all, output_right[i])] = 1;
