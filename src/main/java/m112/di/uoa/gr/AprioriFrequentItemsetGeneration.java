@@ -265,62 +265,43 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
         boolean flag;
         // iterate over trees
-        while (frequentItemset.hasNext()){
+        while (frequentItemset.hasNext()) {
 
             AprioriCandidatesHashTree tree = frequentItemset.next();
-           
-            if (tree.size()>0) {
 
+            if (tree.size() > 0) {
                 trees.add(tree);
             }
-//            flag = true;
-            // iterate over itemset
-            while(tree.hasNext()){
+            flag = true;
+            //iterate over itemset
+            while (tree.hasNext()) {
 
                 AprioriItemset itemset = tree.next();
-//                log.debug(itemset.toString());
-//                if(flag){
-//                    itemsetToSearch.add(itemset);
-//                    flag = false;
-//                }
-            }
-        }
-
-        // search itemset on each tree
-//        for(int i =0; i < itemsetToSearch.size(); i++){
-//            log.debug("Itemset " + itemsetToSearch.get(i)
-//                + " found on " + i + " tree with support "
-//                + trees.get(i).getSupportByItemset(itemsetToSearch.get(i))
-//            );
-//        }
-
-        for (int i=0; i<trees.size(); i++) {
-
-            while (trees.get(i).hasNext()) {
-
-                AprioriItemset current_itemset = trees.get(i).next();
-                log.debug(Arrays.toString(current_itemset.getItems()) + " " + current_itemset.getSupport());
+                log.debug(itemset.toString());
+                if (flag) {
+                    itemsetToSearch.add(itemset);
+                    flag = false;
+                }
             }
         }
         
-//        System.out.println("\n");
-//        log.debug("Generating Association Rules ...");
-//
-//        /*
-//        AprioriAssociationRulesGeneration rulesGeneration = new AprioriAssociationRulesGeneration(trees);
-//        while (rulesGeneration.hasNext()) {
-//            rulesGeneration.next();
-//        }
-//        */
-//
+        System.out.println("\n");
+        log.debug("Generating Apriori Association Rules...");
 
+        
         double min_cofidence = 0.50;
-        int current_support;
-        int k, loops;
-        int elements[];
+        //int current_support;
+        //int k, loops;
+        //int elements[];
+        
+        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence);
+        while (rules_gen.hasNext()) {
+            rules_gen.next();
+        }
+        /*
         AprioriAssociationRule apriori_rules=new AprioriAssociationRule(trees);
 
-        for (int i = 2; i < trees.size(); i++) {
+        for (int i = 1; i < trees.size(); i++) {
             while (trees.get(i).hasNext()) {
                 AprioriItemset current_itemset = trees.get(i).next();
                 System.out.println("\n");
@@ -339,6 +320,6 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                     loops--;
                 }
             }
-        } 
+        }*/ 
     }
 }
