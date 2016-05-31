@@ -313,9 +313,10 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 //        }
 //        */
 //
+
         double min_cofidence = 0.50;
         int current_support;
-        int k, n;
+        int k, loops;
         int elements[];
         AprioriAssociationRule apriori_rules=new AprioriAssociationRule(trees);
 
@@ -331,11 +332,13 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 current_support = current_itemset.getSupport();
 
                 k = 1;
-                while (k<=elements.length) {
+                loops=elements.length-1;
+                while (k<=elements.length & loops>=1) {
                     elements=apriori_rules.combination(elements, k, elements.length, current_support, min_cofidence);
                     k++;
+                    loops--;
                 }
             }
-        }
+        } 
     }
 }
