@@ -54,7 +54,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssoci
                 loops--;
             }
         }
-        return 10;
+        return null;
     }
 
     @Override public void remove() {
