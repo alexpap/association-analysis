@@ -4,6 +4,7 @@ package m112.di.uoa.gr;
  *
  */
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.log4j.Logger;
@@ -15,7 +16,8 @@ public class AprioriAssociationRule {
     protected int[] elements_all;
     protected int update[];
     protected int combination_left[];
-    
+    protected List rules_result;
+            
     public AprioriAssociationRule(List<AprioriCandidatesHashTree> kCandidateTrees) {
         this.trees=kCandidateTrees;
     }
@@ -74,9 +76,14 @@ public class AprioriAssociationRule {
                         }
                         
                     } else {
-                        log.debug("Confidence " + Arrays.toString(output_left) + " -> "
+                        rules_result.add("Current itemset " + Arrays.toString(elements_all) + " itemset's support " + current_support
+                                +" Confidence " + Arrays.toString(output_left) + " -> "
                                 + Arrays.toString(output_right) + " = " + current_confidence
                                 + " X " + Arrays.toString(output_left) + " support " + temp_support);
+                        /*
+                        log.debug("Confidence " + Arrays.toString(output_left) + " -> "
+                                + Arrays.toString(output_right) + " = " + current_confidence
+                                + " X " + Arrays.toString(output_left) + " support " + temp_support);*/
                     }
 
                     index++;

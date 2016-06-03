@@ -293,10 +293,13 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         //int current_support;
         //int k, loops;
         //int elements[];
-        
+        List rules;
         AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence);
         while (rules_gen.hasNext()) {
-            rules_gen.next();
+            rules=rules_gen.next();
+            for (int i=0; i<rules.size(); i++) {
+                log.debug(rules.get(i));
+            }
         }
         /*
         AprioriAssociationRule apriori_rules=new AprioriAssociationRule(trees);

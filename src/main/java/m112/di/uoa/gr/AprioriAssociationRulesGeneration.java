@@ -1,5 +1,6 @@
 package m112.di.uoa.gr;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.log4j.Logger;
 
@@ -11,7 +12,7 @@ import java.util.NoSuchElementException;
  *
  */
 
-public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssociationRule> {
+public class AprioriAssociationRulesGeneration implements Iterator<List<String>> {
 
     private static final Logger log = Logger.getLogger(AprioriAssociationRulesGeneration.class);
     private List<AprioriCandidatesHashTree> trees;
@@ -34,12 +35,12 @@ public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssoci
         return ktree < trees.size();
     }
 
-    @Override public AprioriAssociationRule next() {
-        
+    @Override public List<String> next() {
+        apriori_rules.rules_result=new ArrayList();
         while (trees.get(ktree).hasNext()) {
             AprioriItemset current_itemset = trees.get(ktree).next();
-            System.out.println("\n");
-            log.debug("Current itemset " + Arrays.toString(current_itemset.getItems()) + " itemset's support " + current_itemset.getSupport());
+            //System.out.println("\n");
+            //log.debug("Current itemset " + Arrays.toString(current_itemset.getItems()) + " itemset's support " + current_itemset.getSupport());
             elements = current_itemset.getItems().clone();
             apriori_rules.elements_all = current_itemset.getItems().clone();
             apriori_rules.update = new int[apriori_rules.elements_all.length];
@@ -54,7 +55,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<AprioriAssoci
                 loops--;
             }
         }
-        return null;
+        return apriori_rules.rules_result;
     }
 
     @Override public void remove() {
