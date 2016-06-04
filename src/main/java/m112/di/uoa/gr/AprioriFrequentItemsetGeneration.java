@@ -258,8 +258,8 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     
     public static void main(String[] args){
 
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.45);
-        frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.15);
+        frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
         List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();

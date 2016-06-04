@@ -6,8 +6,9 @@
 package m112.di.uoa.gr;
 
 import java.util.*;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.DefaultStyledDocument;
 
 /**
  *
@@ -219,7 +220,9 @@ public class AssociationAnalysis extends javax.swing.JFrame {
             while (tree.hasNext()) {
 
                 AprioriItemset itemset = tree.next();
-                jTextPane2.setText(jTextPane2.getText()+Arrays.toString(itemset.getItems())+" -> "+itemset.getSupport()+"\n");
+                jTextPane2.setText(jTextPane2.getText() + "haha\n");
+
+                this.pack();
                 if (flag) {
                     itemsetToSearch.add(itemset);
                     flag = false;

@@ -17,7 +17,7 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
 
     private static final Logger log = Logger.getLogger(AprioriCandidatesHashTree.class);
 
-    private class Node {
+    private static class Node {
 
         Node[] next;
         HashMap<AprioriItemset, int[]> itemsets;
@@ -280,15 +280,17 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         AprioriCandidatesHashTree candidates = new AprioriCandidatesHashTree(offset + 1, threshold);
         ArrayList<AprioriItemset> itemsets = getItemsets();
         int[] items;
+        long time = 0;
         for(int i = 0; i < itemsets.size() - offset; i ++) {
 
             for(int j = i + 1; j < itemsets.size(); j++){
-
+                if(itemsets.get(i).getItems().length > 500) time = System.currentTimeMillis();
                 items = isMergeable(this, itemsets.get(i).getItems(),itemsets.get(j).getItems());
                 if(items != null){
 
                     candidates.frequencyIncrement(items, true);
                 }
+                if(items.length > 500) log.debug(" items size of " + items.length + " time " + (System.currentTimeMillis() - time));
             }
         }
         return candidates;
