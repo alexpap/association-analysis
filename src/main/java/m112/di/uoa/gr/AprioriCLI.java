@@ -67,9 +67,13 @@ public class AprioriCLI {
             log.debug("Parsing ...");
             CommandLine line = parser.parse(options, args);
             minsupp = Double.parseDouble(line.getOptionValue("min-support"));
-            log.debug(minsupp);
+            if(minsupp < 0.1 && minsupp > 0.5){
+                throw new ParseException("Please provide minimum support between [0.1,0.5].");
+            }
             minconf = Double.parseDouble(line.getOptionValue("min-confidence"));
-            log.debug(minconf);
+            if(minconf < 0.5 && minconf > 0.8){
+                throw new ParseException("Please provide minimum support between [0.5,0.8].");
+            }
             inputType = MovieLensDatasetType.valueOf(line.getOptionValue("input"));
             log.debug(inputType);
 
@@ -99,6 +103,15 @@ public class AprioriCLI {
 
                 AprioriItemset itemset = tree.next();
                 log.info(itemset.toString());
+            }
+        }
+
+        List rules;
+        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, minconf);
+        while (rules_gen.hasNext()) {
+            rules=rules_gen.next();
+            for (int i=0; i<rules.size(); i++) {
+                log.debug(rules.get(i));
             }
         }
     }
