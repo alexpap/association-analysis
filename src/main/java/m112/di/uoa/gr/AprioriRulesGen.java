@@ -5,9 +5,9 @@
  */
 package m112.di.uoa.gr;
 
-import java.util.Arrays;
-import javafx.scene.input.KeyCode;
 import org.apache.log4j.Logger;
+
+import java.util.Arrays;
 
 /**
  *

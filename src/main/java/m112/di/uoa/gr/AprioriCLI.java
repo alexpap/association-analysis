@@ -67,18 +67,18 @@ public class AprioriCLI {
             log.debug("Parsing ...");
             CommandLine line = parser.parse(options, args);
             minsupp = Double.parseDouble(line.getOptionValue("min-support"));
-            if(minsupp < 0.1 && minsupp > 0.5){
+            if(minsupp < 0.1 || minsupp > 0.5){
                 throw new ParseException("Please provide minimum support between [0.1,0.5].");
             }
             minconf = Double.parseDouble(line.getOptionValue("min-confidence"));
-            if(minconf < 0.5 && minconf > 0.8){
+            if(minconf < 0.5 || minconf > 0.8){
                 throw new ParseException("Please provide minimum support between [0.5,0.8].");
             }
             inputType = MovieLensDatasetType.valueOf(line.getOptionValue("input"));
-            log.debug(inputType);
-
+            if(inputType == null)
+                throw new ParseException("Please provide as input one of {ml_100k, ml_1m, ml_10m, ml_latest_small}.");
             exportTitles = line.hasOption("titles");
-            log.debug(exportTitles);
+
         }catch(Exception ex){
             log.error(ex);
             new HelpFormatter().printHelp("AprioriCLI", options);

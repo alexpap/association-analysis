@@ -229,7 +229,7 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
 
     private static int[] isMergeable(AprioriCandidatesHashTree tree, int[] is1, int[] is2){
 
-        if (is1.length != is2.length) return null;
+        if (is1 == null || is2 == null || is1.length != is2.length) return null;
         int i, n = is1.length - 1;
         for (i = 0; i < n; i++) {
 
@@ -283,14 +283,17 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         long time = 0;
         for(int i = 0; i < itemsets.size() - offset; i ++) {
 
+            if(itemsets.get(i).getItems() == null) continue;
+
             for(int j = i + 1; j < itemsets.size(); j++){
-                if(itemsets.get(i).getItems().length > 500) time = System.currentTimeMillis();
+
+                if(itemsets.get(j).getItems() == null) continue;
+
                 items = isMergeable(this, itemsets.get(i).getItems(),itemsets.get(j).getItems());
                 if(items != null){
 
                     candidates.frequencyIncrement(items, true);
                 }
-                if(items.length > 500) log.debug(" items size of " + items.length + " time " + (System.currentTimeMillis() - time));
             }
         }
         return candidates;

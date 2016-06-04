@@ -5,15 +5,9 @@
  */
 package m112.di.uoa.gr;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.concurrent.Worker;
-
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
