@@ -272,16 +272,11 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             if (tree.size() > 0) {
                 trees.add(tree);
             }
-            flag = true;
             //iterate over itemset
             while (tree.hasNext()) {
 
                 AprioriItemset itemset = tree.next();
                 log.debug(itemset.toString());
-                if (flag) {
-                    itemsetToSearch.add(itemset);
-                    flag = false;
-                }
             }
         }
         
@@ -290,9 +285,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
         
         double min_cofidence = 0.50;
-        //int current_support;
-        //int k, loops;
-        //int elements[];
+
         List rules;
         AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence);
         while (rules_gen.hasNext()) {
@@ -301,28 +294,5 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 log.debug(rules.get(i));
             }
         }
-        /*
-        AprioriAssociationRule apriori_rules=new AprioriAssociationRule(trees);
-
-        for (int i = 1; i < trees.size(); i++) {
-            while (trees.get(i).hasNext()) {
-                AprioriItemset current_itemset = trees.get(i).next();
-                System.out.println("\n");
-                log.debug("Current itemset "+Arrays.toString(current_itemset.getItems())+" itemset's support "+current_itemset.getSupport());
-                elements = current_itemset.getItems().clone();
-                apriori_rules.elements_all=current_itemset.getItems().clone();
-                apriori_rules.update = new int[apriori_rules.elements_all.length];
-                apriori_rules.combination_left = new int[apriori_rules.elements_all.length];
-                current_support = current_itemset.getSupport();
-
-                k = 1;
-                loops=elements.length-1;
-                while (k<=elements.length & loops>=1) {
-                    elements=apriori_rules.combination(elements, k, elements.length, current_support, min_cofidence);
-                    k++;
-                    loops--;
-                }
-            }
-        }*/ 
     }
 }
