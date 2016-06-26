@@ -18,12 +18,13 @@ public class AprioriAssociationRule {
     protected int[] elements_all;
     protected int update[];
     protected int combination_left[];
-    protected ArrayList<AprioriRule> rule_elements;
+    protected int possible_combinations;
+    protected AprioriRule aprioriRule;
 
     public AprioriAssociationRule(List<AprioriCandidatesHashTree> kCandidateTrees) {
         this.trees=kCandidateTrees;
     }
-    
+
     public int[] combination(int[] elements, int k, int n, int current_support, double min_confidence) {
 
         int combination_right[] = new int[k];
@@ -31,15 +32,13 @@ public class AprioriAssociationRule {
         int output_left[] = new int[elements_all.length - k];
         int counter_right = 0;
 
-        //rule_confidence = new ArrayList();
-        //int temp_support;
         double current_confidence;
         
         int r = 0, i;
         int index = 0;
-
+        aprioriRule = new AprioriRule(elements_all, possible_combinations);
         while (r >= 0) {
-            //AprioriRule rule= new AprioriRule();
+
             if (index <= (n + (r - k))) {
                 combination_right[r] = index;
 
@@ -65,7 +64,6 @@ public class AprioriAssociationRule {
                         }
                     }
 
-                    //temp_support = ;
                     current_confidence = (double) current_support / trees.get(output_left.length - 1).getSupportByItems(output_left);
                     
                     if (current_confidence < min_confidence) {
@@ -76,14 +74,8 @@ public class AprioriAssociationRule {
                         }
                         
                     } else {
-                        //TODO
-                        rule_elements.add(new AprioriRule(elements_all, output_left, current_confidence, output_right));
-                        /*
-                        rules_result.add("Current itemset " + Arrays.toString(elements_all) + " itemset's support " + current_support
-                                +" Confidence " + Arrays.toString(output_left) + " -> "
-                                + Arrays.toString(output_right) + " = " + current_confidence
-                                + " X " + Arrays.toString(output_left) + " support " + temp_support);
-                                */
+                        RuleElement rule = new RuleElement(output_left.clone(), output_right.clone(), current_confidence);
+                        aprioriRule.add(rule);
                     }
 
                     index++;
@@ -100,10 +92,8 @@ public class AprioriAssociationRule {
                 }
             }
         }
-        //TODO
-        for (i=0; i<rule_elements.size(); i++) {
-            log.debug(rule_elements.get(i).toString());
-        }
+
+
 
         if (n > counter_right) {
             int result[] = new int[n - counter_right];

@@ -1,5 +1,8 @@
 package m112.di.uoa.gr;
 
+import com.sun.deploy.security.ruleset.Rule;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -9,15 +12,13 @@ import java.util.List;
 public class AprioriRule {
 
     private int[] current_itemset;
-    private int[] lhs;
-    private int[] rhs;
-    private double rule_confidence;
+    protected List<RuleElement> rules;
+    private int possible_combinations;
 
-    public AprioriRule(int[] current_itemset, int[] lhs, double rule_confidence, int[] rhs) {
+    public AprioriRule(int[] current_itemset, int possible_combinations) {
         this.current_itemset = current_itemset;
-        this.lhs = lhs;
-        this.rule_confidence = rule_confidence;
-        this.rhs = rhs;
+        rules=new ArrayList();
+        this.possible_combinations=possible_combinations;
     }
 
     public int[] getCurrent_itemset() {
@@ -28,37 +29,30 @@ public class AprioriRule {
         this.current_itemset = current_itemset;
     }
 
-    public int[] getLhs() {
-        return lhs;
+    public boolean add (RuleElement rl) {
+        return rules.add(rl);
     }
 
-    public void setLhs(int[] lhs) {
-        this.lhs = lhs;
+    public int getPossible_combinations() {
+        return possible_combinations;
     }
 
-    public int[] getRhs() {
-        return rhs;
-    }
-
-    public void setRhs(int[] rhs) {
-        this.rhs = rhs;
-    }
-
-    public double getRule_confidence() {
-        return rule_confidence;
-    }
-
-    public void setRule_confidence(double rule_confidence) {
-        this.rule_confidence = rule_confidence;
+    public void setPossible_combinations(int possible_combinations) {
+        this.possible_combinations = possible_combinations;
     }
 
     @Override
     public String toString() {
-        return "AprioriRule{" +
-                "current_itemset=" + Arrays.toString(current_itemset) +
-                ", rule=" + Arrays.toString(lhs) +
-                " -> " + Arrays.toString(rhs) +
-                ", rule_confidence=" + rule_confidence +
-                '}';
+        String result= "AprioriRule {" +
+                "current_itemset=" + Arrays.toString(current_itemset)+"\n";
+
+        for (int i=0; i<rules.size(); i++) {
+            result=result+"rule="+
+                    Arrays.toString(rules.get(i).getHead())+" -> "+
+                    Arrays.toString(rules.get(i).getBody())+
+                    ", rule_confidence="+rules.get(i).getRule_confidence()+"\n";
+        }
+
+        return result+"}";
     }
 }

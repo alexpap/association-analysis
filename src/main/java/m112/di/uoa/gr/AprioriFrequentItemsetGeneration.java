@@ -255,7 +255,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     @Override public void remove() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     public static void main(String[] args){
 
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.50);
@@ -283,14 +283,19 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         log.debug("\n");
         log.debug("Generating Apriori Association Rules...");
 
-        List<AprioriRule> rules;
-        //AprioriRule rule=new AprioriRule();
-        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence);
+        List<AprioriRule> rules_temp;
+        List<AprioriRule> rules_all=new ArrayList();
+        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
         while (rules_gen.hasNext()) {
-            rules=rules_gen.next();
-            //for (int i=0; i<rules.size(); i++) {
-                //log.debug(rules.get(i).toString());
-            //}
+            rules_temp=rules_gen.next();
+            for (int i=0; i<rules_temp.size(); i++) {
+                log.debug(rules_temp.get(i).toString());
+            }
         }
+        log.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        for (int i=0; i<rules_all.size(); i++) {
+            log.debug(rules_all.get(i).toString());
+        }
+
     }
 }
