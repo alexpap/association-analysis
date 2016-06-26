@@ -258,8 +258,9 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     
     public static void main(String[] args){
 
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.15);
-        frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.50);
+        double min_cofidence = 0.50;
+        frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
         List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
@@ -274,25 +275,22 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             }
             //iterate over itemset
             while (tree.hasNext()) {
-
                 AprioriItemset itemset = tree.next();
                 log.debug(itemset.toString());
             }
         }
-        
-        System.out.println("\n");
+
+        log.debug("\n");
         log.debug("Generating Apriori Association Rules...");
 
-        
-        double min_cofidence = 0.50;
-
-        List rules;
+        List<AprioriRule> rules;
+        //AprioriRule rule=new AprioriRule();
         AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence);
         while (rules_gen.hasNext()) {
             rules=rules_gen.next();
-            for (int i=0; i<rules.size(); i++) {
-                log.debug(rules.get(i));
-            }
+            //for (int i=0; i<rules.size(); i++) {
+                //log.debug(rules.get(i).toString());
+            //}
         }
     }
 }

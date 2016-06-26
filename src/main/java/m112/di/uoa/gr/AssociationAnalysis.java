@@ -217,15 +217,15 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                 final AprioriItemset itemset = tree.next();
                 jTextArea2.append(itemset.toString()+"\n");
             }
-            
-            
+
+
             List rules;
             AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence);
             while (rules_gen.hasNext()) {
-                rules = rules_gen.next();
-                for (int i = 0; i < rules.size(); i++) {
-                    jTextArea1.append(rules.get(i).toString()+"\n");
-                }
+                //rules = rules_gen.next();
+                //for (int i = 0; i < rules.size(); i++) {
+                //    jTextArea1.append(rules.get(i).toString()+"\n");
+                //}
             }
         }
     }//GEN-LAST:event_jButton2ActionPerformed
