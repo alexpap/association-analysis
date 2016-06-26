@@ -292,10 +292,10 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 log.debug(rules_temp.get(i).toString());
             }
         }
-        log.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        /*
         for (int i=0; i<rules_all.size(); i++) {
             log.debug(rules_all.get(i).toString());
         }
-
+        */
     }
 }
