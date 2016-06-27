@@ -6,8 +6,6 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.junit.Assert.*;
-
 /**
  * @author alexpap
  */
@@ -35,7 +33,7 @@ import static org.junit.Assert.*;
         args[2] = "--min-confidence";
         args[3] = String.valueOf(minconf);
         args[4] = "--input";
-        args[5] = "ml_1m";
+        args[5] = "ml_10m";
         AprioriCLI.main(args);
     }
 
