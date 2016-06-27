@@ -258,7 +258,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
     public static void main(String[] args){
 
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.50);
+        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.450);
         double min_cofidence = 0.50;
         frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
 
