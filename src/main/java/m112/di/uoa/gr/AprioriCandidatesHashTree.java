@@ -1,6 +1,5 @@
 package m112.di.uoa.gr;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -11,6 +10,7 @@ import java.util.*;
  *  - support factor itemset filtering
  *  - new k+1-itemset generation (apriori-gen) using F_(k-1)xF_(k-1) method
  *  - transaction support counting
+ *  - iterator api over the leafs itemsets
  * @author alexpap
  */
 public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
@@ -167,7 +167,8 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         while (!q.isEmpty()) {
 
             node = q.removeFirst();
-            if (node.isLeafNode()) {
+            if(node == null) continue;
+            else if (node.isLeafNode()) {
 
                 Iterator<Map.Entry<AprioriItemset, int[]>> it = node.itemsets.entrySet().iterator();
                 while (it.hasNext()) {
@@ -221,6 +222,7 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         }
         return itemsets;
     }
+
     private boolean checkFrequency(int[] items){
 
         int supp = getSupportByItems(items);
