@@ -107,7 +107,8 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 String line = "";
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                //reader.readLine(); // skip header
+                if(MovieLensDatasetType.ml_latest_small.equals(datasetType))
+                    reader.readLine(); // skip header
 
                 while ((line = reader.readLine()) != null) {
 
