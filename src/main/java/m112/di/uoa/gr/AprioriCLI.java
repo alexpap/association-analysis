@@ -114,14 +114,22 @@ public class AprioriCLI {
             }
         }
 
-//        List<AprioriRule> rules_temp;
-//        List<AprioriRule> rules_all=new ArrayList();
-//        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, minconf, rules_all);
-//        while (rules_gen.hasNext()) {
-//            rules_temp=rules_gen.next();
-//            for (int i=0; i<rules_temp.size(); i++) {
-//                log.debug(rules_temp.get(i).toString());
-//            }
-//        }
+        log.trace("\n");
+        log.trace("Generating Apriori Association Rules...");
+
+        List<AprioriRule> rules_temp;
+        List<AprioriRule> rules_all=new ArrayList();
+        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, minconf, rules_all);
+        while (rules_gen.hasNext()) {
+            rules_temp=rules_gen.next();
+            for (int i=0; i<rules_temp.size(); i++) {
+                log.trace(rules_temp.get(i).toString());
+            }
+        }
+        /*
+        for (int i=0; i<rules_all.size(); i++) {
+            log.debug(rules_all.get(i).toString());
+        }
+        */
     }
 }
