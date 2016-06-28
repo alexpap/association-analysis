@@ -149,7 +149,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 minsupp = Double.valueOf(threshold * items.size()).intValue();
                 k = 1;
                 currentFrequentItemsets = new AprioriCandidatesHashTree(1, minsupp);
-                log.debug("Minimum support = " + minsupp);
+                log.debug("Minimum support = " + minsupp + "(" + threshold *100 + "%)");
                 String line;
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
@@ -170,7 +170,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                     ubasket.add(ikey);
 
                     // update firstItemsets
-                    currentFrequentItemsets.frequencyIncrement(new int[] {ikey}, false);
+                    currentFrequentItemsets.frequencyIncrement(new int[] {ikey}, true, 1);
                 }
                 log.debug(baskets.size() + " #Baskets loaded (" + String
                     .valueOf(System.currentTimeMillis() - tstart) + "ms, " + getMemoryMBUsage()
@@ -182,10 +182,16 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 tstart = System.currentTimeMillis();
                 log.debug("Try to format baskets ...");
                 transactions = new int[baskets.size()][];
+                long w, minw = Long.MAX_VALUE, maxw = 0, sumw = 0, ssumw = 0;
                 int i = 0;
                 Iterator<Integer> it;
                 for (Map.Entry<Integer, TreeSet<Integer>> entry : baskets.entrySet()) {
                     TreeSet<Integer> basket = entry.getValue();
+                    // stats
+                    w = basket.size();
+                    if(w < minw) minw = w;
+                    if(w > maxw) maxw = w;
+                    sumw += w; ssumw += w*w;
                     it = basket.iterator();
                     transactions[i] = new int[basket.size()];
 
@@ -199,6 +205,10 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 log.debug(
                     "Baskets formatted (" + String.valueOf(System.currentTimeMillis() - tstart)
                         + " ms, " + getMemoryMBUsage() + " MB)");
+                int n = transactions.length;
+                log.debug("Width Statistics : Max " + maxw
+                        + ", Min " + minw + ", Avg " + (sumw/n)
+                        + ", SD " + (Math.sqrt((ssumw/n)-Math.pow(sumw/n,2))));
                 log.debug("****************************************");
             } finally {
 
@@ -248,6 +258,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             currentFrequentItemsets = currentItemsets;
         }
         log.debug(k + "-itemsets created size of " + currentFrequentItemsets.size());
+        log.debug("****************************************");
         k++;
         return currentFrequentItemsets;
     }
@@ -258,40 +269,38 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
     public static void main(String[] args){
 
-        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(0.450);
-        double min_cofidence = 0.50;
-        frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
+        AprioriFrequentItemsetGeneration frequentItemset =
+            new AprioriFrequentItemsetGeneration(0.5);
+
+        frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
-        List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
-        boolean flag;
+
         // iterate over trees
         while (frequentItemset.hasNext()) {
 
             AprioriCandidatesHashTree tree = frequentItemset.next();
+            if (tree.size() > 0) trees.add(tree);
 
-            if (tree.size() > 0) {
-                trees.add(tree);
-            }
             //iterate over itemset
             while (tree.hasNext()) {
                 AprioriItemset itemset = tree.next();
-                log.debug(itemset.toString());
+//                log.debug(itemset.toString());
             }
         }
 
-        log.debug("\n");
-        log.debug("Generating Apriori Association Rules...");
-
-        List<AprioriRule> rules_temp;
-        List<AprioriRule> rules_all=new ArrayList();
-        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
-        while (rules_gen.hasNext()) {
-            rules_temp=rules_gen.next();
-            for (int i=0; i<rules_temp.size(); i++) {
-                log.debug(rules_temp.get(i).toString());
-            }
-        }
+//        log.debug("\n");
+//        log.debug("Generating Apriori Association Rules...");
+//        double min_cofidence = 0.50;
+//        List<AprioriRule> rules_temp;
+//        List<AprioriRule> rules_all=new ArrayList();
+//        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
+//        while (rules_gen.hasNext()) {
+//            rules_temp=rules_gen.next();
+//            for (int i=0; i<rules_temp.size(); i++) {
+//                log.debug(rules_temp.get(i).toString());
+//            }
+//        }
         /*
         for (int i=0; i<rules_all.size(); i++) {
             log.debug(rules_all.get(i).toString());

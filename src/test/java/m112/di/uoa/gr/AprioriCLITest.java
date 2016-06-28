@@ -11,10 +11,10 @@ import java.util.Collection;
  */
 @RunWith(Parameterized.class) public class AprioriCLITest {
 
-    double minsupp, minconf;
+    String argsLine;
 
-    public AprioriCLITest(double supp, double conf) {
-        minsupp = supp; minconf = conf;
+    public AprioriCLITest(String args) {
+        argsLine = args;
     }
 
     @org.junit.Before public void setUp() throws Exception {
@@ -27,23 +27,26 @@ import java.util.Collection;
 
     @org.junit.Test public void testMain() throws Exception {
 
-        String[] args = new String[6]; //  --min-support 0.5 --min-confidence 0.8 --input ml_10m
-        args[0] = "--min-support";
-        args[1] = String.valueOf(minsupp);
-        args[2] = "--min-confidence";
-        args[3] = String.valueOf(minconf);
-        args[4] = "--input";
-        args[5] = "ml_10m";
-        AprioriCLI.main(args);
+        String[] split = argsLine.split(" ");
+        AprioriCLI.main(split);
     }
 
     @Parameterized.Parameters public static Collection inputParameters(){
-        return Arrays.asList(new Object[][]{
-            { 0.5, 0.5},
-            { 0.4, 0.5},
-            { 0.3, 0.5},
-            { 0.2, 0.5},
-            { 0.1, 0.5}
+        return Arrays.asList(new Object[]{
+            "--min-support 0.10 --min-confidence 0.5 --input ml_100k",
+            "--min-support 0.20 --min-confidence 0.5 --input ml_100k",
+            "--min-support 0.30 --min-confidence 0.5 --input ml_100k",
+            "--min-support 0.40 --min-confidence 0.5 --input ml_100k",
+//            "--min-support 0.10 --min-confidence 0.5 --input ml_1m",
+            "--min-support 0.20 --min-confidence 0.5 --input ml_1m",
+            "--min-support 0.30 --min-confidence 0.5 --input ml_1m",
+            "--min-support 0.40 --min-confidence 0.5 --input ml_1m",
+            "--min-support 0.50 --min-confidence 0.5 --input ml_1m",
+//            "--min-support 0.20 --min-confidence 0.5 --input ml_10m",
+//            "--min-support 0.30 --min-confidence 0.5 --input ml_10m",
+            "--min-support 0.40 --min-confidence 0.5 --input ml_10m",
+            "--min-support 0.50 --min-confidence 0.5 --input ml_10m",
+
         });
     }
 }

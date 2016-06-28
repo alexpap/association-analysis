@@ -1,10 +1,8 @@
 package m112.di.uoa.gr;
 
 import org.apache.commons.cli.*;
-import org.apache.commons.lang3.SystemUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +50,14 @@ public class AprioriCLI {
                 .optionalArg(true)
                 .build()
         );
+        options.addOption(
+            Option.builder()
+                .argName("log")
+                .desc("log level")
+                .longOpt("log")
+                .optionalArg(true)
+                .build()
+        );
         return options;
     }
 
@@ -60,7 +66,7 @@ public class AprioriCLI {
         double minsupp = -1, minconf = -1;
         MovieLensDatasetType inputType = null;
         boolean exportTitles = false;
-
+        Level level = Level.DEBUG;
         Options options = createOptions();
         CommandLineParser parser = new DefaultParser();
         try{
@@ -78,13 +84,15 @@ public class AprioriCLI {
             if(inputType == null)
                 throw new ParseException("Please provide as input one of {ml_100k, ml_1m, ml_10m, ml_latest_small}.");
             exportTitles = line.hasOption("titles");
-
+            level = Level.toLevel(line.getOptionValue("log"), Level.DEBUG);
+            if(inputType == null)
+                throw new ParseException("Please provide as input one of {info, debug}.");
         }catch(Exception ex){
             log.error(ex);
             new HelpFormatter().printHelp("AprioriCLI", options);
             System.exit(1);
         }
-
+        Logger.getRootLogger().setLevel(level);
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(minsupp);
         frequentItemset.preprocess(inputType);
 
@@ -102,7 +110,7 @@ public class AprioriCLI {
             while (tree.hasNext()) {
 
                 AprioriItemset itemset = tree.next();
-                log.info(itemset.toString());
+                log.trace(itemset.toString());
             }
         }
 

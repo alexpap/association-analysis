@@ -1,5 +1,6 @@
 package m112.di.uoa.gr;
 
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -8,7 +9,7 @@ import java.util.*;
  * Apriori k-itemset candidates  Hash Tree capable of :
  *  - itemset frequency increment
  *  - support factor itemset filtering
- *  - new k+1-itemset generation (apriori-gen) using F_(k-1)xF_(k-1) method
+ *  - k-itemset generation (apriori-gen) using F_(k-1)xF_(k-1) method
  *  - transaction support counting
  *  - iterator api over the leafs itemsets
  * @author alexpap
@@ -84,44 +85,48 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
     }
 
     /**
-     * Increase the counter for the given itemset @items.
+     * Increase the counter for the given itemset.
      * If the given itemset does not exist,
-     * then new set will created with counter value 1.
+     * then new set will created.
+     * if gen is true and the given itemset does not exist
+     * then the newly created set has counter value equals to initValue,
+     * otherwise no action is taken.
      * @param items
      */
-    public void frequencyIncrement(int[] items, boolean gen) {
+    public void frequencyIncrement(int[] items, boolean gen, int initValue) {
 
         int i, v;
-        boolean added = false;
         AprioriItemset newItemset = new AprioriItemset();
         newItemset.setItems(items);
         newItemset.setLevel(0);
 
         Node current = root, node;
-        while (newItemset.getLevel() < offset && !added) {
+        while (newItemset.getLevel() < offset) {
 
             i = newItemset.hashValue();
             node = current.next[i];
             if (node == null) {                                 // empty leaf node
 
-                if (gen) current.next[i] = new Node(newItemset, new int[] {0});
-                else current.next[i] = new Node(newItemset);
-                ++size;
-                added = true;
+                if (gen) {
+                    current.next[i] = new Node(newItemset, new int[] {initValue});
+                    ++size;
+                }
+                return;
             } else if (node.isLeafNode()) {                     // leaf node
 
                 int[] support = node.itemsets.get(newItemset);
                 if (support != null) {                          // already exists
 
                     ++support[0];
-                    added = true;
+                    return;
                 } else if (node.itemsets.size() < offset        // has space or
                     || (newItemset.getLevel() + 1) == offset) { // maximum level reached
 
-                    if(gen) node.itemsets.put(newItemset, new int[] {0});
-                    else node.itemsets.put(newItemset, new int[] {1});
-                    ++size;
-                    added = true;
+                    if(gen){
+                        node.itemsets.put(newItemset, new int[] {initValue});
+                        ++size;
+                    }
+                    return;
                 } else {                                        // create new index Node
                                                                 // & rehash old itemsets
                     Node indexNode = new Node(offset);
@@ -149,10 +154,6 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
                 newItemset.increaseLevel();
                 current = node;
             }
-        }
-
-        if (!added) {
-            throw new RuntimeException("Unable to insert new itemset");
         }
     }
 
@@ -282,7 +283,6 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
         AprioriCandidatesHashTree candidates = new AprioriCandidatesHashTree(offset + 1, threshold);
         ArrayList<AprioriItemset> itemsets = getItemsets();
         int[] items;
-        long time = 0;
         for(int i = 0; i < itemsets.size() - offset; i ++) {
 
             if(itemsets.get(i).getItems() == null) continue;
@@ -294,74 +294,11 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
                 items = isMergeable(this, itemsets.get(i).getItems(),itemsets.get(j).getItems());
                 if(items != null){
 
-                    candidates.frequencyIncrement(items, true);
+                    candidates.frequencyIncrement(items, true, 0);
                 }
             }
         }
         return candidates;
-    }
-
-    private void clearVisited(){
-
-        ArrayDeque<Node> q = new ArrayDeque<Node>();
-        q.add(root);
-        Node node;
-        while (!q.isEmpty()) {
-
-            node = q.removeFirst();
-            if (node.isLeafNode()) {
-
-               node.visited = false;
-            } else {
-
-                for (int i = 0; i < offset; i++) {
-
-                    if (node.next[i] != null) {
-
-                        q.add(node.next[i]);
-                    }
-                }
-            }
-        }
-    }
-
-    private static void frequencyIncrement(int[] transaction, int k, Node node, int index){
-
-        if(node == null) return;
-
-        if(node.isLeafNode()){
-
-            if(!node.visited) {
-
-                int[] items;
-                int i, search;
-                for (Map.Entry<AprioriItemset, int[]> entry : node.itemsets.entrySet()) {
-
-                    items = entry.getKey().getItems();
-                    for (i = 0; i < k; i++) {
-
-                        search = Arrays.binarySearch(transaction, 0, transaction.length, items[i]);
-                        if (search < 0) {
-
-                            break;
-                        }
-                    }
-
-                    if (i == k) {
-
-                        ++entry.getValue()[0];
-                    }
-                }
-                node.visited = true;
-            }
-        } else {
-
-            for (int i = index; i < transaction.length - k; i++) {
-
-                AprioriCandidatesHashTree
-                    .frequencyIncrement(transaction, k, node.next[transaction[i] % k] , i + 1);
-            }
-        }
     }
 
     /**
@@ -370,8 +307,36 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
      */
     public void supportCounting(int[] transaction){
 
-        AprioriCandidatesHashTree.frequencyIncrement(transaction, offset, root, 0);
-        clearVisited();
+        int[] items = new int[offset];
+
+
+        long comb1 = CombinatoricsUtils.binomialCoefficient(transaction.length, offset) * (long)Math.log(size());
+        long comb2 = size()*offset*(long)Math.log(transaction.length);
+        if(comb1 < comb2) { // search transaction combinations @ candidates
+            Iterator<int[]> iterator =
+                CombinatoricsUtils.combinationsIterator(transaction.length, offset);
+            while (iterator.hasNext()){
+                int[] next = iterator.next();
+                for(int i = 0; i < offset; i++){
+                    items[i] = transaction[next[i]];
+                }
+                frequencyIncrement(items, false, 0);
+            }
+        }
+        else { // search candidates @ transaction
+
+            while (hasNext()){
+                AprioriItemset itemset = next();
+                boolean flag = true;
+                for (int item : itemset.getItems()) {
+                    if(Arrays.binarySearch(transaction, item) < 0){
+                        flag = false;
+                    }
+                }
+                if(flag)itemset.increaseSupport();
+            }
+        }
+
     }
 
     public int getSupportByItems(int[] items){
@@ -420,7 +385,7 @@ public class AprioriCandidatesHashTree implements Iterator<AprioriItemset> {
 
             return true;
         }
-        queue = null;                                // re-init
+        queue = null;                               // re-init
         leafIterator = null;
         counter = 0;
         return false;
