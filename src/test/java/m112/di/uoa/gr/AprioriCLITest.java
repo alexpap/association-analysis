@@ -33,6 +33,13 @@ import java.util.Collection;
 
     @Parameterized.Parameters public static Collection inputParameters(){
         return Arrays.asList(new Object[]{
+            "--min-support 0.01 --min-confidence 0.5 --input ml_latest_small",
+            "--min-support 0.05 --min-confidence 0.5 --input ml_latest_small",
+            "--min-support 0.10 --min-confidence 0.5 --input ml_latest_small",
+            "--min-support 0.20 --min-confidence 0.5 --input ml_latest_small",
+            "--min-support 0.30 --min-confidence 0.5 --input ml_latest_small",
+            "--min-support 0.40 --min-confidence 0.5 --input ml_latest_small",
+            "--min-support 0.50 --min-confidence 0.5 --input ml_latest_small",
             "--min-support 0.01 --min-confidence 0.5 --input ml_100k",
             "--min-support 0.05 --min-confidence 0.5 --input ml_100k",
             "--min-support 0.10 --min-confidence 0.5 --input ml_100k",
