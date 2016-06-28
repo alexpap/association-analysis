@@ -73,7 +73,7 @@ public class AprioriCLI {
             log.debug("Parsing ...");
             CommandLine line = parser.parse(options, args);
             minsupp = Double.parseDouble(line.getOptionValue("min-support"));
-            if(minsupp < 0.1 || minsupp > 0.5){
+            if(minsupp < 0.01 || minsupp > 0.5){
                 throw new ParseException("Please provide minimum support between [0.1,0.5].");
             }
             minconf = Double.parseDouble(line.getOptionValue("min-confidence"));
@@ -93,6 +93,7 @@ public class AprioriCLI {
             System.exit(1);
         }
         Logger.getRootLogger().setLevel(level);
+        long start = System.currentTimeMillis();
         AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(minsupp);
         frequentItemset.preprocess(inputType);
 
@@ -113,7 +114,7 @@ public class AprioriCLI {
                 log.trace(itemset.toString());
             }
         }
-
+        log.info( "FreqItemGen time : " + (System.currentTimeMillis() - start) + " ms");
 //        List<AprioriRule> rules_temp;
 //        List<AprioriRule> rules_all=new ArrayList();
 //        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, minconf, rules_all);
@@ -123,5 +124,6 @@ public class AprioriCLI {
 //                log.debug(rules_temp.get(i).toString());
 //            }
 //        }
+
     }
 }
