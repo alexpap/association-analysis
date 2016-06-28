@@ -314,7 +314,8 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                 String entitled_itemset_body;
                 for (int i = 0; i < rules_all.size(); i++) {
                     List<RuleElement> rule_temp = rules_all.get(i).rules;
-                    for (int j = 0; j < rule_temp.size(); j++) {
+                    int counter = rules_all.get(i).getFinal_rules();
+                    for (int j = 0; j < counter; j++) {
                         //log.debug(rule_temp.get(j));
                         int head_temp[] = rule_temp.get(j).getHead();
                         int body_temp[] = rule_temp.get(j).getBody();
