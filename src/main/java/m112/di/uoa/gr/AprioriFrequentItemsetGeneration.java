@@ -270,9 +270,9 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     public static void main(String[] args){
 
         AprioriFrequentItemsetGeneration frequentItemset =
-            new AprioriFrequentItemsetGeneration(0.5);
-
-        frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
+            new AprioriFrequentItemsetGeneration(0.10);
+        double min_cofidence = 0.50;
+        frequentItemset.preprocess(MovieLensDatasetType.ml_100k);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
 
@@ -285,22 +285,22 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             //iterate over itemset
             while (tree.hasNext()) {
                 AprioriItemset itemset = tree.next();
-//                log.debug(itemset.toString());
+                log.debug(itemset.toString());
             }
         }
 
-//        log.debug("\n");
-//        log.debug("Generating Apriori Association Rules...");
-//        double min_cofidence = 0.50;
-//        List<AprioriRule> rules_temp;
-//        List<AprioriRule> rules_all=new ArrayList();
-//        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
-//        while (rules_gen.hasNext()) {
-//            rules_temp=rules_gen.next();
-//            for (int i=0; i<rules_temp.size(); i++) {
-//                log.debug(rules_temp.get(i).toString());
-//            }
-//        }
+        log.debug("\n");
+        log.debug("Generating Apriori Association Rules...");
+
+        List<AprioriRule> rules_temp;
+        List<AprioriRule> rules_all=new ArrayList();
+        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
+        while (rules_gen.hasNext()) {
+            rules_temp=rules_gen.next();
+            for (int i=0; i<rules_temp.size(); i++) {
+                log.debug(rules_temp.get(i).toString());
+            }
+        }
         /*
         for (int i=0; i<rules_all.size(); i++) {
             log.debug(rules_all.get(i).toString());
