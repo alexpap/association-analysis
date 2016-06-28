@@ -34,7 +34,6 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
 
     @Override public boolean hasNext() {
         ktree++;
-        rule_counter=temp;
         return ktree < trees.size();
     }
 
@@ -42,6 +41,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
 
         //List<AprioriRule> rules_result=new ArrayList<AprioriRule>();
         temp=0;
+        rule_counter=0;
         while (trees.get(ktree).hasNext()) {
 
             AprioriItemset current_itemset = trees.get(ktree).next();
@@ -64,10 +64,11 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
                 k++;
                 loops--;
             }
-            rules_all.add(apriori_rules.aprioriRule);
-            temp++;
+            if (!apriori_rules.aprioriRule.rules.isEmpty()) {
+                rules_all.add(apriori_rules.aprioriRule);
+                temp++;
+            }
         }
-        //rules_all.addAll(rules_result);
         return rules_all.subList(rule_counter, temp);
     }
 

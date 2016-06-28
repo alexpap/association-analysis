@@ -1,5 +1,7 @@
 package m112.di.uoa.gr;
 
+import java.util.Arrays;
+
 /**
  * Created by ppetrou on 26/6/2016.
  */
@@ -36,5 +38,14 @@ public class RuleElement {
 
     public void setRule_confidence(double rule_confidence) {
         this.rule_confidence = rule_confidence;
+    }
+
+    @Override
+    public String toString() {
+        return "RuleElement{" +
+                "head=" + Arrays.toString(head) +
+                ", body=" + Arrays.toString(body) +
+                ", rule_confidence=" + rule_confidence +
+                '}';
     }
 }
