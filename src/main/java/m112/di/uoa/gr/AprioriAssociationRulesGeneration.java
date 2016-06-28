@@ -44,6 +44,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
         rule_counter=0;
         while (trees.get(ktree).hasNext()) {
             AprioriItemset current_itemset = trees.get(ktree).next();
+            log.debug(current_itemset.toString());
             int elements[] = current_itemset.getItems().clone();
             apriori_rules.elements_all = current_itemset.getItems().clone();
             apriori_rules.update = new int[apriori_rules.elements_all.length];

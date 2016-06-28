@@ -7,6 +7,7 @@ package m112.di.uoa.gr;
 
 import javax.swing.text.AbstractDocument;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -14,7 +15,10 @@ import java.util.List;
  * @author ppetrou
  */
 public class AssociationAnalysis extends javax.swing.JFrame {
-
+    private String dataset;
+    private AprioriFrequentItemsetGeneration frequentItemset;
+    private List<AprioriRule> rules_all;
+    private List<AprioriCandidatesHashTree> trees;
     /**
      * Creates new form AssociationAnalysis
      */
@@ -95,6 +99,11 @@ public class AssociationAnalysis extends javax.swing.JFrame {
         jLabel13.setText(" Apriori Association Rules");
 
         jButton1.setText("Transform into Titles");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jLabel14.setText("Support: ");
 
@@ -164,14 +173,14 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                     .addComponent(jLabel9)
                     .addComponent(jLabel10, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addGap(10, 10, 10)
                 .addComponent(jLabel12)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel13)
                 .addGap(12, 12, 12)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
@@ -193,8 +202,8 @@ public class AssociationAnalysis extends javax.swing.JFrame {
         new Thread(){
             @Override public void run() {
                 jLabel15.setText("Executing...");
-                String dataset=(String) jComboBox2.getSelectedItem();
-                AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(Double.parseDouble(jTextField5.getText()));
+                dataset=(String) jComboBox2.getSelectedItem();
+                frequentItemset = new AprioriFrequentItemsetGeneration(Double.parseDouble(jTextField5.getText()));
 
                 double min_cofidence = Double.parseDouble(jTextField4.getText());
 
@@ -208,7 +217,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                     frequentItemset.preprocess(MovieLensDatasetType.ml_latest_small);
                 }
 
-                List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
+                trees = new ArrayList<AprioriCandidatesHashTree>();
                 List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
                 boolean flag;
                 // iterate over trees
@@ -223,7 +232,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                     }
 
                     List<AprioriRule> rules_temp;
-                    List<AprioriRule> rules_all=new ArrayList();
+                    rules_all=new ArrayList();
                     AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
                     while (rules_gen.hasNext()) {
                         rules_temp=rules_gen.next();
@@ -274,6 +283,65 @@ public class AssociationAnalysis extends javax.swing.JFrame {
 //            }
 //        }
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        jTextArea1.setText("");
+        jTextArea2.setText("");
+        new Thread() {
+            @Override
+            public void run() {
+                jLabel15.setText("Transforming...");
+                HashMap<Integer, String> title = frequentItemset.items;
+                String entitled_itemset;
+                int ktree = 0;
+                while (ktree < trees.size()) {
+                    while (trees.get(ktree).hasNext()) {
+                        AprioriItemset current_itemset = trees.get(ktree).next();
+                        entitled_itemset = "";
+                        for (int i = 0; i < current_itemset.getItems().length; i++) {
+                            int itemset_temp[] = current_itemset.getItems();
+                            if (i == 0) {
+                                entitled_itemset = entitled_itemset + title.get(itemset_temp[i]);
+                            } else {
+                                entitled_itemset = entitled_itemset + ", " + title.get(itemset_temp[i]);
+                            }
+                        }
+                        jTextArea2.append("Itemset=" + entitled_itemset + ", Support=" + current_itemset.getSupport() + "\n");
+                    }
+                    ktree++;
+                }
+
+                String entitled_itemset_body;
+                for (int i = 0; i < rules_all.size(); i++) {
+                    List<RuleElement> rule_temp = rules_all.get(i).rules;
+                    for (int j = 0; j < rule_temp.size(); j++) {
+                        //log.debug(rule_temp.get(j));
+                        int head_temp[] = rule_temp.get(j).getHead();
+                        int body_temp[] = rule_temp.get(j).getBody();
+
+                        entitled_itemset = "";
+                        for (int x = 0; x < head_temp.length; x++) {
+                            if (x == 0) {
+                                entitled_itemset = entitled_itemset + title.get(head_temp[x]);
+                            } else {
+                                entitled_itemset = entitled_itemset + ", " + title.get(head_temp[x]);
+                            }
+                        }
+                        entitled_itemset_body = "";
+                        for (int x = 0; x < body_temp.length; x++) {
+                            if (x == 0) {
+                                entitled_itemset_body = entitled_itemset_body + title.get(body_temp[x]);
+                            } else {
+                                entitled_itemset_body = entitled_itemset_body + ", " + title.get(body_temp[x]);
+                            }
+                        }
+                        jTextArea1.append("Rule=" + entitled_itemset + " -> " + entitled_itemset_body + " Rule Confidence=" + rule_temp.get(j).getRule_confidence() + "\n");
+                    }
+                }
+                jLabel15.setText("Done!!!");
+            }
+        }.start();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments

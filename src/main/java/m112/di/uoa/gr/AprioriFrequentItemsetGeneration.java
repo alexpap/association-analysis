@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.zip.ZipFile;
 
@@ -17,7 +18,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     private static final Logger log = Logger.getLogger(AprioriFrequentItemsetGeneration.class);
     private int k, minsupp;
     private AprioriCandidatesHashTree currentFrequentItemsets;
-    private HashMap<int[], String> items;
+    protected HashMap<Integer, String> items;
     private int[][] transactions;
     private double threshold;
 
@@ -37,7 +38,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     public AprioriFrequentItemsetGeneration(double support_threshold) {
         k = 0;
         currentFrequentItemsets= null;
-        items = new HashMap<int[], String>();
+        items = new HashMap<Integer, String>();
         transactions = null;
         threshold = support_threshold;
     }
@@ -106,12 +107,12 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
                 String line = "";
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                reader.readLine(); // skip header
+                //reader.readLine(); // skip header
 
                 while ((line = reader.readLine()) != null) {
 
                     tokenizer = new StringTokenizer(line, itemsep, false);
-                    items.put(new int[] {Integer.parseInt(tokenizer.nextToken())}, tokenizer.nextToken());
+                    items.put(Integer.parseInt(tokenizer.nextToken()), tokenizer.nextToken());
                 }
                 log.debug(items.size() + " #Items loaded (" + String
                     .valueOf(System.currentTimeMillis() - tstart) + " ms, " + getMemoryMBUsage()
@@ -275,7 +276,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         frequentItemset.preprocess(MovieLensDatasetType.ml_100k);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
-
+        AprioriItemset itemset;
         // iterate over trees
         while (frequentItemset.hasNext()) {
 
@@ -284,13 +285,13 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
             //iterate over itemset
             while (tree.hasNext()) {
-                AprioriItemset itemset = tree.next();
+                itemset = tree.next();
                 log.debug(itemset.toString());
             }
         }
 
-        log.debug("\n");
-        log.debug("Generating Apriori Association Rules...");
+        //log.debug("\n");
+        //log.debug("Generating Apriori Association Rules...");
 
         List<AprioriRule> rules_temp;
         List<AprioriRule> rules_all=new ArrayList();
@@ -298,13 +299,54 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         while (rules_gen.hasNext()) {
             rules_temp=rules_gen.next();
             for (int i=0; i<rules_temp.size(); i++) {
-                log.debug(rules_temp.get(i).toString());
+                //log.debug(rules_temp.get(i).toString());
             }
         }
-        /*
-        for (int i=0; i<rules_all.size(); i++) {
-            log.debug(rules_all.get(i).toString());
+
+
+        HashMap<Integer,String>  title=frequentItemset.items;
+        String entitled_itemset;
+        int ktree =0;
+        while (ktree < trees.size()) {
+            while (trees.get(ktree).hasNext()) {
+                AprioriItemset current_itemset = trees.get(ktree).next();
+                entitled_itemset="";
+                for (int i=0; i<current_itemset.getItems().length; i++) {
+                    int itemset_temp[] =current_itemset.getItems();
+                    if (i==0)
+                        entitled_itemset=entitled_itemset+title.get(itemset_temp[i]);
+                    else
+                        entitled_itemset=entitled_itemset+", "+title.get(itemset_temp[i]);
+                }
+                log.debug("Itemset="+entitled_itemset+", Support="+current_itemset.getSupport());
+            }
+            ktree++;
         }
-        */
+
+        String entitled_itemset_body;
+        for (int i=0; i<rules_all.size(); i++) {
+            List<RuleElement> rule_temp = rules_all.get(i).rules;
+            for (int j=0; j<rule_temp.size(); j++) {
+                //log.debug(rule_temp.get(j));
+                int head_temp[]=rule_temp.get(j).getHead();
+                int body_temp[]=rule_temp.get(j).getBody();
+
+                entitled_itemset="";
+                for (int x=0; x<head_temp.length; x++) {
+                    if (x==0)
+                        entitled_itemset=entitled_itemset+title.get(head_temp[x]);
+                    else
+                        entitled_itemset=entitled_itemset+", "+title.get(head_temp[x]);
+                }
+                entitled_itemset_body="";
+                for (int x=0; x<body_temp.length; x++) {
+                    if (x==0)
+                        entitled_itemset_body=entitled_itemset_body+title.get(body_temp[x]);
+                    else
+                        entitled_itemset_body=entitled_itemset_body+", "+title.get(body_temp[x]);
+                }
+                log.debug("Rule="+entitled_itemset+" -> "+entitled_itemset_body+" Rule Confidence="+rule_temp.get(j).getRule_confidence());
+            }
+        }
     }
 }
