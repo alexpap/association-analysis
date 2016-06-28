@@ -69,6 +69,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
                 temp++;
             }
         }
+        //apriori_rules.s
         return rules_all.subList(rule_counter, temp);
     }
 

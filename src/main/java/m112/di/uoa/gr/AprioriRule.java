@@ -11,12 +11,13 @@ public class AprioriRule {
 
     private int[] current_itemset;
     protected List<RuleElement> rules;
-    private int possible_combinations;
+    private int candidate_rules;
+    private int final_rules;
 
     public AprioriRule(int[] current_itemset, int possible_combinations) {
         this.current_itemset = current_itemset;
         rules=new ArrayList();
-        this.possible_combinations=possible_combinations;
+        this.candidate_rules=possible_combinations;
     }
 
     public int[] getCurrent_itemset() {
@@ -32,11 +33,19 @@ public class AprioriRule {
     }
 
     public int getPossible_combinations() {
-        return possible_combinations;
+        return candidate_rules;
     }
 
-    public void setPossible_combinations(int possible_combinations) {
-        this.possible_combinations = possible_combinations;
+    public void setPossible_combinations(int candidate_rules) {
+        this.candidate_rules = candidate_rules;
+    }
+
+    public int getFinal_rules() {
+        return final_rules;
+    }
+
+    public void setFinal_rules(int final_rules) {
+        this.final_rules = final_rules;
     }
 
     @Override
@@ -51,6 +60,6 @@ public class AprioriRule {
                     ", rule_confidence="+rules.get(i).getRule_confidence()+"\n";
         }
 
-        return result+"}";
+        return result+"} Candidate Rules="+candidate_rules+ "Final Rules="+final_rules;
     }
 }
