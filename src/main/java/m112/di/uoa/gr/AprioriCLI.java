@@ -73,7 +73,7 @@ public class AprioriCLI {
             log.debug("Parsing ...");
             CommandLine line = parser.parse(options, args);
             minsupp = Double.parseDouble(line.getOptionValue("min-support"));
-            if(minsupp < 0.1 || minsupp > 0.5){
+            if(minsupp < 0.01 || minsupp > 0.5){
                 throw new ParseException("Please provide minimum support between [0.1,0.5].");
             }
             minconf = Double.parseDouble(line.getOptionValue("min-confidence"));
