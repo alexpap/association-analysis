@@ -28,12 +28,14 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
         apriori_rules = new AprioriAssociationRule(trees);
         min_cofidence=min_confidence;
         this.rules_all=rules_all;
+        this.rule_counter=0;
     }
 
     @Override public boolean hasNext() {
         ktree++;
         if( ktree < trees.size()) return true;
         totalRules = 0; finalRules = 0;
+        rule_counter=rule_counter+temp;
         return false;
     }
 
@@ -41,7 +43,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
 
         //List<AprioriRule> rules_result=new ArrayList<AprioriRule>();
         temp=0;
-        rule_counter=0;
+        //rule_counter=0;
         while (trees.get(ktree).hasNext()) {
             AprioriItemset current_itemset = trees.get(ktree).next();
             log.trace(current_itemset.toString());
@@ -70,7 +72,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
             }
             apriori_rules.aprioriRule.setFinal_rules(apriori_rules.aprioriRule.rules.size());
         }
-        return rules_all.subList(rule_counter, temp);
+        return rules_all.subList(rule_counter, rule_counter+temp);
     }
 
     public int possible_combinations(int n, int r){
