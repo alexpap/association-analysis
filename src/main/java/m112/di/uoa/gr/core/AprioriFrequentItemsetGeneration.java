@@ -348,29 +348,31 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         }
 
         String entitled_itemset_body;
-        for (int i=0; i<rules_all.size(); i++) {
-            List<RuleElement> rule_temp = rules_all.get(i).rules;
-            int counter = rules_all.get(i).getFinal_rules();
-            for (int j = 0; j < counter; j++) {
-                //log.debug(rule_temp.get(j));
-                int head_temp[]=rule_temp.get(j).getHead();
-                int body_temp[]=rule_temp.get(j).getBody();
+        if (rules_all!=null) {
+            for (int i = 0; i < rules_all.size(); i++) {
+                List<RuleElement> rule_temp = rules_all.get(i).rules;
+                int counter = rules_all.get(i).getFinal_rules();
+                for (int j = 0; j < counter; j++) {
+                    //log.debug(rule_temp.get(j));
+                    int head_temp[] = rule_temp.get(j).getHead();
+                    int body_temp[] = rule_temp.get(j).getBody();
 
-                entitled_itemset="";
-                for (int x=0; x<head_temp.length; x++) {
-                    if (x==0)
-                        entitled_itemset=entitled_itemset+title.get(head_temp[x]);
-                    else
-                        entitled_itemset=entitled_itemset+", "+title.get(head_temp[x]);
+                    entitled_itemset = "";
+                    for (int x = 0; x < head_temp.length; x++) {
+                        if (x == 0)
+                            entitled_itemset = entitled_itemset + title.get(head_temp[x]);
+                        else
+                            entitled_itemset = entitled_itemset + ", " + title.get(head_temp[x]);
+                    }
+                    entitled_itemset_body = "";
+                    for (int x = 0; x < body_temp.length; x++) {
+                        if (x == 0)
+                            entitled_itemset_body = entitled_itemset_body + title.get(body_temp[x]);
+                        else
+                            entitled_itemset_body = entitled_itemset_body + ", " + title.get(body_temp[x]);
+                    }
+                    log.debug("Rule=" + entitled_itemset + " -> " + entitled_itemset_body + " Rule Confidence=" + rule_temp.get(j).getRule_confidence());
                 }
-                entitled_itemset_body="";
-                for (int x=0; x<body_temp.length; x++) {
-                    if (x==0)
-                        entitled_itemset_body=entitled_itemset_body+title.get(body_temp[x]);
-                    else
-                        entitled_itemset_body=entitled_itemset_body+", "+title.get(body_temp[x]);
-                }
-                log.debug("Rule="+entitled_itemset+" -> "+entitled_itemset_body+" Rule Confidence="+rule_temp.get(j).getRule_confidence());
             }
         }
     }
