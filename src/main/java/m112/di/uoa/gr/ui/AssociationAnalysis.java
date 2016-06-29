@@ -3,7 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package m112.di.uoa.gr;
+package m112.di.uoa.gr.ui;
+
+import m112.di.uoa.gr.core.*;
 
 import javax.swing.text.AbstractDocument;
 import java.util.ArrayList;
@@ -244,44 +246,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                 jLabel15.setText("Done!!!");
             }
         }.start();
-        
-//        AprioriFrequentItemsetGeneration frequentItemset = new AprioriFrequentItemsetGeneration(Double.parseDouble(jTextField5.getText()));
-//        double min_cofidence = Double.parseDouble(jTextField4.getText());
-//
-//        if (dataset.equals("MovieLens 100K Dataset")) {
-//            frequentItemset.preprocess(MovieLensDatasetType.ml_100k);
-//        } else if (dataset.equals("MovieLens 1M Dataset")) {
-//            frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
-//        } else if (dataset.equals("MovieLens 10M Dataset")) {
-//            frequentItemset.preprocess(MovieLensDatasetType.ml_10m);
-//        } else if (dataset.equals("MovieLens Latest Small")) {
-//            frequentItemset.preprocess(MovieLensDatasetType.ml_latest_small);
-//        }
-//
-//        List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
-//        List<AprioriItemset> itemsetToSearch = new ArrayList<AprioriItemset>();
-//        boolean flag;
-//        // iterate over trees
-//        while (frequentItemset.hasNext()) {
-//
-//            AprioriCandidatesHashTree tree = frequentItemset.next();
-//            trees.add(tree);
-//            // iterate over itemset
-//            while (tree.hasNext()) {
-//                final AprioriItemset itemset = tree.next();
-//                jTextArea2.append(itemset.toString()+"\n");
-//            }
-//
-//            List<AprioriRule> rules_temp;
-//            List<AprioriRule> rules_all=new ArrayList();
-//            AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
-//            while (rules_gen.hasNext()) {
-//                rules_temp=rules_gen.next();
-//                for (int i=0; i<rules_temp.size(); i++) {
-//                    jTextArea1.append(rules_temp.get(i).toString()+"\n");
-//                }
-//            }
-//        }
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -291,7 +256,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
             @Override
             public void run() {
                 jLabel15.setText("Transforming...");
-                HashMap<Integer, String> title = frequentItemset.items;
+                HashMap<Integer, String> title = frequentItemset.getItems();
                 String entitled_itemset;
                 int ktree = 0;
                 while (ktree < trees.size()) {
@@ -313,7 +278,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
 
                 String entitled_itemset_body;
                 for (int i = 0; i < rules_all.size(); i++) {
-                    List<RuleElement> rule_temp = rules_all.get(i).rules;
+                    List<RuleElement> rule_temp = rules_all.get(i).getRules();
                     int counter = rules_all.get(i).getFinal_rules();
                     for (int j = 0; j < counter; j++) {
                         //log.debug(rule_temp.get(j));

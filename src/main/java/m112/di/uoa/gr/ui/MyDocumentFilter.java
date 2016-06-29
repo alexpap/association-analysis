@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package m112.di.uoa.gr;
+package m112.di.uoa.gr.ui;
 
 import java.awt.Toolkit;
 import javax.swing.text.AttributeSet;
@@ -48,7 +48,7 @@ public class MyDocumentFilter extends DocumentFilter
 
         for (int i = 0; i < len; i++)
         {
-            if (!Character.isDigit(string.charAt(i)) & string.charAt(i)!=".".charAt(0) )
+            if (!Character.isDigit(string.charAt(i)) & string.charAt(i)!= "".charAt(0) )
             {
                 isValidInteger = false;
                 break;

@@ -1,13 +1,13 @@
-package m112.di.uoa.gr;
+package m112.di.uoa.gr.core;
 
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 /**
  * A-priori, Support-base pruning
@@ -52,10 +52,11 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         log.debug("****************************************");
         log.debug("Input dataset " + datasetType.toString());
         String zipPath = null, zipFileName, itemsFilename, moviesFilename, itemsep, moviessep;
-
+        InputStream zip = null;
         if (MovieLensDatasetType.ml_100k.equals(datasetType)) {
             zipPath =
                 AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-100k.zip").getPath();
+            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-100k.zip");
             zipFileName = "ml-100k/";
             itemsFilename = "u.item";
             moviesFilename = "u.data";
@@ -65,6 +66,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         } else if (MovieLensDatasetType.ml_1m.equals(datasetType)){
             zipPath =
                 AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-1m.zip").getPath();
+            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-1m.zip");
             zipFileName = "ml-1m/";
             itemsFilename = "movies.dat";
             moviesFilename = "ratings.dat";
@@ -72,6 +74,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             moviessep = "::";
         } else if(MovieLensDatasetType.ml_10m.equals(datasetType)){
             zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-10m.zip").getPath();
+            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-10m.zip");
             zipFileName = "ml-10M100K/";
             itemsFilename = "movies.dat";
             moviesFilename = "ratings.dat";
@@ -80,6 +83,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         } else if(MovieLensDatasetType.ml_latest_small.equals(datasetType)) {
             zipPath =
                 AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
+            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-latest-small.zip");
             zipFileName = "ml-latest-small/";
             itemsFilename = "movies.csv";
             moviesFilename = "ratings.csv";
@@ -226,6 +230,10 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             throw new RuntimeException("Internal error occurred", ex);
         }
 
+    }
+
+    public HashMap<Integer, String> getItems() {
+        return items;
     }
 
     @Override public boolean hasNext() {

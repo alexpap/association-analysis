@@ -1,10 +1,7 @@
-package m112.di.uoa.gr;
-
-import java.util.ArrayList;
+package m112.di.uoa.gr.core;
 
 import org.apache.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -23,6 +20,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
     private List<AprioriRule> rules_all;
     private int rule_counter;
     private int temp;
+    private long totalRules = 0, finalRules = 0;
 
     public AprioriAssociationRulesGeneration(List<AprioriCandidatesHashTree> kCandidateTrees, double min_confidence, List<AprioriRule> rules_all) {
         trees = kCandidateTrees;
@@ -34,7 +32,9 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
 
     @Override public boolean hasNext() {
         ktree++;
-        return ktree < trees.size();
+        if( ktree < trees.size()) return true;
+        totalRules = 0; finalRules = 0;
+        return false;
     }
 
     @Override public List<AprioriRule> next() {
@@ -44,7 +44,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
         rule_counter=0;
         while (trees.get(ktree).hasNext()) {
             AprioriItemset current_itemset = trees.get(ktree).next();
-            log.debug(current_itemset.toString());
+            log.trace(current_itemset.toString());
             int elements[] = current_itemset.getItems().clone();
             apriori_rules.elements_all = current_itemset.getItems().clone();
             apriori_rules.update = new int[apriori_rules.elements_all.length];
@@ -91,6 +91,7 @@ public class AprioriAssociationRulesGeneration implements Iterator<List<AprioriR
             return n * fact(n-1);
     }
 
+    public String getStats(){ return " TotalRules " + totalRules + " finalRules " + finalRules; }
     @Override public void remove() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

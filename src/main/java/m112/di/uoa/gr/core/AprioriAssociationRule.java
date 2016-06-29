@@ -1,13 +1,11 @@
-package m112.di.uoa.gr;
+package m112.di.uoa.gr.core;
 
 /**
  *
  */
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 

@@ -1,4 +1,4 @@
-package m112.di.uoa.gr;
+package m112.di.uoa.gr.core;
 
 import java.util.Arrays;
 

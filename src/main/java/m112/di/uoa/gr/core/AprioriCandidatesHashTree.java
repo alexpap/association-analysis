@@ -1,4 +1,4 @@
-package m112.di.uoa.gr;
+package m112.di.uoa.gr.core;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.log4j.Logger;
