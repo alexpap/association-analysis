@@ -293,9 +293,9 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
     public static void main(String[] args){
 
         AprioriFrequentItemsetGeneration frequentItemset =
-            new AprioriFrequentItemsetGeneration(0.10);
-        double min_cofidence = 0.50;
-        frequentItemset.preprocess(MovieLensDatasetType.ml_100k);
+            new AprioriFrequentItemsetGeneration(0.30);
+        double min_cofidence = 0.60;
+        frequentItemset.preprocess(MovieLensDatasetType.ml_1m);
 
         List<AprioriCandidatesHashTree> trees = new ArrayList<AprioriCandidatesHashTree>();
         AprioriItemset itemset;
@@ -317,11 +317,13 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
         List<AprioriRule> rules_temp;
         List<AprioriRule> rules_all=new ArrayList();
-        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
-        while (rules_gen.hasNext()) {
-            rules_temp=rules_gen.next();
-            for (int i=0; i<rules_temp.size(); i++) {
-                //log.debug(rules_temp.get(i).toString());
+        if (trees.size()>2) {
+            AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
+            while (rules_gen.hasNext()) {
+                rules_temp = rules_gen.next();
+                for (int i = 0; i < rules_temp.size(); i++) {
+                    //log.debug(rules_temp.get(i).toString());
+                }
             }
         }
 

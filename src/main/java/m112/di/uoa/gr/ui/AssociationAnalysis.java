@@ -7,6 +7,7 @@ package m112.di.uoa.gr.ui;
 
 import m112.di.uoa.gr.core.*;
 
+import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -221,20 +222,24 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                         jTextArea2.append(itemset.toString()+"\n");
                     }
 
-                    List<AprioriRule> rules_temp;
-                    rules_all=new ArrayList();
-                    AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
-                    while (rules_gen.hasNext()) {
-                        rules_temp=rules_gen.next();
-                        for (int i=0; i<rules_temp.size(); i++) {
-                            jTextArea1.append(rules_temp.get(i).toString()+"\n");
+                    if (trees.size()>2) {
+                        List<AprioriRule> rules_temp;
+                        rules_all = new ArrayList();
+                        AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
+                        while (rules_gen.hasNext()) {
+                            rules_temp = rules_gen.next();
+                            for (int i = 0; i < rules_temp.size(); i++) {
+                                jTextArea1.append(rules_temp.get(i).toString() + "\n");
+                            }
                         }
                     }
                 }
                 jLabel15.setText("Done!!!");
+                if (trees.size()<=2) {
+                    JOptionPane.showMessageDialog(null, "Cannot generate rules with these settings.");
+                }
             }
         }.start();
-
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -265,31 +270,33 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                 }
 
                 String entitled_itemset_body;
-                for (int i = 0; i < rules_all.size(); i++) {
-                    List<RuleElement> rule_temp = rules_all.get(i).getRules();
-                    int counter = rules_all.get(i).getFinal_rules();
-                    for (int j = 0; j < counter; j++) {
-                        //log.debug(rule_temp.get(j));
-                        int head_temp[] = rule_temp.get(j).getHead();
-                        int body_temp[] = rule_temp.get(j).getBody();
+                if (rules_all!=null) {
+                    for (int i = 0; i < rules_all.size(); i++) {
+                        List<RuleElement> rule_temp = rules_all.get(i).getRules();
+                        int counter = rules_all.get(i).getFinal_rules();
+                        for (int j = 0; j < counter; j++) {
+                            //log.debug(rule_temp.get(j));
+                            int head_temp[] = rule_temp.get(j).getHead();
+                            int body_temp[] = rule_temp.get(j).getBody();
 
-                        entitled_itemset = "";
-                        for (int x = 0; x < head_temp.length; x++) {
-                            if (x == 0) {
-                                entitled_itemset = entitled_itemset + title.get(head_temp[x]);
-                            } else {
-                                entitled_itemset = entitled_itemset + ", " + title.get(head_temp[x]);
+                            entitled_itemset = "";
+                            for (int x = 0; x < head_temp.length; x++) {
+                                if (x == 0) {
+                                    entitled_itemset = entitled_itemset + title.get(head_temp[x]);
+                                } else {
+                                    entitled_itemset = entitled_itemset + ", " + title.get(head_temp[x]);
+                                }
                             }
-                        }
-                        entitled_itemset_body = "";
-                        for (int x = 0; x < body_temp.length; x++) {
-                            if (x == 0) {
-                                entitled_itemset_body = entitled_itemset_body + title.get(body_temp[x]);
-                            } else {
-                                entitled_itemset_body = entitled_itemset_body + ", " + title.get(body_temp[x]);
+                            entitled_itemset_body = "";
+                            for (int x = 0; x < body_temp.length; x++) {
+                                if (x == 0) {
+                                    entitled_itemset_body = entitled_itemset_body + title.get(body_temp[x]);
+                                } else {
+                                    entitled_itemset_body = entitled_itemset_body + ", " + title.get(body_temp[x]);
+                                }
                             }
+                            jTextArea1.append("Rule=" + entitled_itemset + " -> " + entitled_itemset_body + " Rule Confidence=" + rule_temp.get(j).getRule_confidence() + "\n");
                         }
-                        jTextArea1.append("Rule=" + entitled_itemset + " -> " + entitled_itemset_body + " Rule Confidence=" + rule_temp.get(j).getRule_confidence() + "\n");
                     }
                 }
                 jLabel15.setText("Done!!!");
