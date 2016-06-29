@@ -45,14 +45,6 @@ public class AprioriCLI {
         );
         options.addOption(
             Option.builder()
-                .argName("titles")
-                .desc("print items title instead of ids")
-                .longOpt("export-titles")
-                .optionalArg(true)
-                .build()
-        );
-        options.addOption(
-            Option.builder()
                 .argName("log")
                 .desc("log level")
                 .longOpt("log")
@@ -111,13 +103,11 @@ public class AprioriCLI {
             while (tree.hasNext()) {
 
                 AprioriItemset itemset = tree.next();
-                log.trace(itemset.toString());
+                log.info(itemset.toString());
             }
         }
 
-        log.trace("\n");
-        log.trace("Generating Apriori Association Rules...");
-
+        log.info("Generating Apriori Association Rules...");
         List<AprioriRule> rules_temp;
         List<AprioriRule> rules_all=new ArrayList();
         AprioriAssociationRulesGeneration
@@ -125,13 +115,8 @@ public class AprioriCLI {
         while (rules_gen.hasNext()) {
             rules_temp=rules_gen.next();
             for (int i=0; i<rules_temp.size(); i++) {
-                log.trace(rules_temp.get(i).toString());
+                log.info(rules_temp.get(i).toString());
             }
         }
-        /*
-        for (int i=0; i<rules_all.size(); i++) {
-            log.debug(rules_all.get(i).toString());
-        }
-        */
     }
 }

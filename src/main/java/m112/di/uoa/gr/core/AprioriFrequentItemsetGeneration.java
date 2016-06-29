@@ -3,9 +3,11 @@ package m112.di.uoa.gr.core;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
@@ -43,6 +45,22 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
         threshold = support_threshold;
     }
 
+    private InputStream getInputFromZip(String zipFile, String fileName){
+        try {
+            ZipInputStream zipInputStream = new ZipInputStream(
+                AprioriFrequentItemsetGeneration.class.getClassLoader()
+                    .getResourceAsStream(zipFile));
+            ZipEntry entry = null;
+            while ((entry = zipInputStream.getNextEntry()) != null){
+                if(fileName.equals(entry.getName())) break;
+            }
+            return zipInputStream;
+        } catch (IOException e) {
+            log.error(e);
+        }
+        return null;
+    }
+
     /**
      * Pre-process anyone of the available movielens dataset.
      * @param datasetType
@@ -51,44 +69,44 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
         log.debug("****************************************");
         log.debug("Input dataset " + datasetType.toString());
-        String zipPath = null, zipFileName, itemsFilename, moviesFilename, itemsep, moviessep;
-        InputStream zip = null;
+        String zipFileName, itemsFilename, moviesFilename, itemsep, moviessep;
+        InputStream inputItems = null, inputMovies = null;
+
         if (MovieLensDatasetType.ml_100k.equals(datasetType)) {
-            zipPath =
-                AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-100k.zip").getPath();
-            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-100k.zip");
             zipFileName = "ml-100k/";
             itemsFilename = "u.item";
             moviesFilename = "u.data";
             itemsep = "|";
             moviessep = "\t";
-
+            inputItems = getInputFromZip("ml-100k.zip", zipFileName + itemsFilename);
+            inputMovies = getInputFromZip("ml-100k.zip", zipFileName + moviesFilename);
         } else if (MovieLensDatasetType.ml_1m.equals(datasetType)){
-            zipPath =
-                AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-1m.zip").getPath();
-            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-1m.zip");
+
             zipFileName = "ml-1m/";
             itemsFilename = "movies.dat";
             moviesFilename = "ratings.dat";
             itemsep = "::";
             moviessep = "::";
+            inputItems = getInputFromZip("ml-1m.zip", zipFileName + itemsFilename);
+            inputMovies = getInputFromZip("ml-1m.zip", zipFileName + moviesFilename);
         } else if(MovieLensDatasetType.ml_10m.equals(datasetType)){
-            zipPath = AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-10m.zip").getPath();
-            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-10m.zip");
+
             zipFileName = "ml-10M100K/";
             itemsFilename = "movies.dat";
             moviesFilename = "ratings.dat";
             itemsep = "::";
             moviessep = "::";
+            inputItems = getInputFromZip("ml-10m.zip", zipFileName + itemsFilename);
+            inputMovies = getInputFromZip("ml-10m.zip", zipFileName + moviesFilename);
         } else if(MovieLensDatasetType.ml_latest_small.equals(datasetType)) {
-            zipPath =
-                AprioriFrequentItemsetGeneration.class.getClassLoader().getResource("ml-latest-small.zip").getPath();
-            zip = AprioriFrequentItemsetGeneration.class.getClassLoader().getResourceAsStream("ml-latest-small.zip");
+
             zipFileName = "ml-latest-small/";
             itemsFilename = "movies.csv";
             moviesFilename = "ratings.csv";
             itemsep = ",";
             moviessep = ",";
+            inputItems = getInputFromZip("ml-latest-small.zip", zipFileName + itemsFilename);
+            inputMovies = getInputFromZip("ml-latest-small.zip", zipFileName + moviesFilename);
         } else throw new RuntimeException("Unable to locate " + datasetType.toString() + " dataset.");
 
         long tstart = System.currentTimeMillis();
@@ -97,10 +115,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             // loading items (movies.csv)
             // keep only movieId, title
             log.debug("Try to load items ...");
-            ZipFile zipFile = new ZipFile(zipPath);
-            String parent = zipPath.substring(zipPath.lastIndexOf("/") + 1).replace(".zip", "/");
-            InputStream inputStream =
-                zipFile.getInputStream(zipFile.getEntry(zipFileName.concat(itemsFilename)));
+            InputStream inputStream = inputItems;
             if (inputStream == null) {
 
                 throw new RuntimeException("Unable to locate movielens movies.");
@@ -108,7 +123,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
             try {
 
-                String line = "";
+                String line;
                 StringTokenizer tokenizer;
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                 if(MovieLensDatasetType.ml_latest_small.equals(datasetType))
@@ -142,9 +157,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
             // loading ratings.csv in order to create movie baskets
             // and the first itemset by skipping ratings.
             log.debug("Try to load baskets ...");
-            ZipFile zipFile = new ZipFile(zipPath);
-            String parent = zipPath.substring(zipPath.lastIndexOf("/") + 1).replace(".zip", "/");
-            InputStream inputStream = zipFile.getInputStream(zipFile.getEntry(zipFileName.concat(moviesFilename)));
+            InputStream inputStream = inputMovies;
             if (inputStream == null) {
 
                 throw new RuntimeException("Unable to locate movielens u.data.");

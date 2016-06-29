@@ -64,6 +64,6 @@ public class AprioriRule {
                     ", rule_confidence="+rules.get(i).getRule_confidence()+"\n";
         }
 
-        return result+"} Candidate Rules="+candidate_rules+ " Final Rules="+final_rules;
+        return result+"}";
     }
 }
