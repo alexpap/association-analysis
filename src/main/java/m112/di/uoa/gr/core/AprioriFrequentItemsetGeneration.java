@@ -317,7 +317,7 @@ public class AprioriFrequentItemsetGeneration implements Iterator<AprioriCandida
 
         List<AprioriRule> rules_temp;
         List<AprioriRule> rules_all=new ArrayList();
-        if (trees.size()>2) {
+        if (trees.size()>=2) {
             AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
             while (rules_gen.hasNext()) {
                 rules_temp = rules_gen.next();

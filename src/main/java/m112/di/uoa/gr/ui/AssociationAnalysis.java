@@ -222,7 +222,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                         jTextArea2.append(itemset.toString()+"\n");
                     }
 
-                    if (trees.size()>2) {
+                    if (trees.size()>=2) {
                         List<AprioriRule> rules_temp;
                         rules_all = new ArrayList();
                         AprioriAssociationRulesGeneration rules_gen = new AprioriAssociationRulesGeneration(trees, min_cofidence, rules_all);
@@ -235,7 +235,7 @@ public class AssociationAnalysis extends javax.swing.JFrame {
                     }
                 }
                 jLabel15.setText("Done!!!");
-                if (trees.size()<=2) {
+                if (trees.size()<2) {
                     JOptionPane.showMessageDialog(null, "Cannot generate rules with these settings.");
                 }
             }
