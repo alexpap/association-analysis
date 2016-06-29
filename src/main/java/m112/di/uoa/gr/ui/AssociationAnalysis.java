@@ -26,10 +26,6 @@ public class AssociationAnalysis extends javax.swing.JFrame {
      */
     public AssociationAnalysis() {
         initComponents();
-        ((AbstractDocument) jTextField5.getDocument()).setDocumentFilter(
-                new MyDocumentFilter());
-        ((AbstractDocument) jTextField4.getDocument()).setDocumentFilter(
-                new MyDocumentFilter());
     }
 
     /**
