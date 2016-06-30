@@ -18,7 +18,7 @@ public class AprioriExpEval {
         MovieLensDatasetType[] inputTypes =
             new MovieLensDatasetType[] {MovieLensDatasetType.ml_100k,
                 MovieLensDatasetType.ml_1m, MovieLensDatasetType.ml_10m};
-        double[] minSuppValues = new double[] {0.2, 0.1, 0.05, 0.01};
+        double[] minSuppValues = new double[] {0.5, 0.4, 0.3, 0.2, 0.1};
 
         for (MovieLensDatasetType inputType : inputTypes) {
 
