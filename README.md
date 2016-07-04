@@ -9,7 +9,7 @@ Traditional Apriori Implementation.
     - Traditional Apriori first Itemset generation as described [here](http://www-users.cs.umn.edu/~kumar/dmbook/ch6.pdf).
     - Apriori-gen using F_(k-1)XF_(k-1) Method
     - Support Counting using candidates hash trees.
-    
-* Association Rules Generation    
-
+* Association Rules Generation 
+    - Confidence-Based Pruning
+    - Rule Genaration using Apriori-gen 
 * Swing GUI, CLI support 
